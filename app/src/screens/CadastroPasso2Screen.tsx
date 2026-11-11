@@ -9,8 +9,8 @@ import PrimaryButton from '../componentes/PrimaryButton';
 import Stepper from '../componentes/Stepper';
 import TextButton from '../componentes/TextButton';
 import { useAuth } from '../auth/AuthProvider';
+import { isValidCpfCnpj, isValidPhone, maskAcronym, maskCpfCnpj, maskEmail, maskName, maskPhone } from '../services/masks';
 
-const CNPJ_REGEX = /^(\d{2}\.?\d{3}\.?\d{3}\/?\d{4}-?\d{2}|\d{11}|\d{14})$/;
 
 type Props = {
   onVoltar?: () => void;
@@ -55,8 +55,12 @@ export default function CadastroPasso2Screen({ onVoltar, onConcluir, navigation 
       setError('Informe o nome da clínica.');
       return;
     }
-    if (cnpj.trim() && !CNPJ_REGEX.test(cnpj.trim())) {
-      setError('CNPJ no formato 00.000.000/0001-90.');
+    if (cnpj.trim() && !isValidCpfCnpj(cnpj)) {
+      setError('CNPJ ou CPF inválido (confira os números).');
+      return;
+    }
+    if (telefone.trim() && !isValidPhone(telefone)) {
+      setError('Telefone incompleto. Use DDD + número, ex.: 61 3000-0000.');
       return;
     }
     setError(null);
@@ -130,7 +134,7 @@ export default function CadastroPasso2Screen({ onVoltar, onConcluir, navigation 
         label="Responsável técnico"
         placeholder=""
         value={responsavel}
-        onChangeText={setResponsavel}
+        onChangeText={(t) => setResponsavel(maskName(t))}
         onFocus={() => scrollToEnd?.()}
         autoCapitalize="words"
         maxLength={80}
@@ -142,7 +146,7 @@ export default function CadastroPasso2Screen({ onVoltar, onConcluir, navigation 
         placeholder="12.345.678/0001-90"
         value={cnpj}
         onChangeText={(t) => {
-          setCnpj(t);
+          setCnpj(maskCpfCnpj(t));
           clearError();
         }}
         onFocus={() => scrollToEnd?.()}
@@ -153,10 +157,10 @@ export default function CadastroPasso2Screen({ onVoltar, onConcluir, navigation 
       <FormField
         id="telefone"
         label="Telefone"
-        placeholder="(11) 3000-0000"
+        placeholder="61 3000-0000"
         value={telefone}
         onChangeText={(t) => {
-          setTelefone(t);
+          setTelefone(maskPhone(t));
           clearError();
         }}
         onFocus={() => scrollToEnd?.()}
@@ -170,7 +174,7 @@ export default function CadastroPasso2Screen({ onVoltar, onConcluir, navigation 
         placeholder="contato@clinica.com.br"
         value={email}
         onChangeText={(t) => {
-          setEmail(t);
+          setEmail(maskEmail(t));
           clearError();
         }}
         onFocus={() => scrollToEnd?.()}
@@ -200,7 +204,7 @@ export default function CadastroPasso2Screen({ onVoltar, onConcluir, navigation 
         placeholder="CP"
         value={sigla}
         onChangeText={(t) => {
-          setSigla(t.toUpperCase());
+          setSigla(maskAcronym(t));
           clearError();
         }}
         onFocus={() => scrollToEnd?.()}

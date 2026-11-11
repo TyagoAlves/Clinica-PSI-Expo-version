@@ -19,6 +19,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors } from '../theme';
 import FormField from './FormField';
 import { DATE_BR, hojeBr } from '../services/patientForm';
+import { isRealDate, maskDate } from '../services/masks';
 
 export type EvolucaoPayload = { sessionDate: string; content: string };
 
@@ -48,7 +49,7 @@ export default function EvolucaoModal({ visible, onClose, onSave, initial, onDel
   }, [visible, initial]);
 
   const salvar = async () => {
-    if (!DATE_BR.test(data.trim())) return setError('Data da sessão no formato DD/MM/AAAA.');
+    if (!DATE_BR.test(data.trim()) || !isRealDate(data.trim())) return setError('Data da sessão inválida (DD/MM/AAAA).');
     if (!texto.trim()) return setError('Escreva a evolução.');
     setSaving(true);
     setError(null);
@@ -99,8 +100,8 @@ export default function EvolucaoModal({ visible, onClose, onSave, initial, onDel
               required
               placeholder="DD/MM/AAAA"
               value={data}
-              onChangeText={setData}
-              keyboardType="numbers-and-punctuation"
+              onChangeText={(t) => setData(maskDate(t))}
+              keyboardType="number-pad"
               maxLength={10}
             />
             <Text style={styles.label}>

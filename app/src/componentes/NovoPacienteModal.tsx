@@ -16,6 +16,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors } from '../theme';
 import FormField from './FormField';
+import { maskDate, maskDocument, maskEmail, maskName, maskPhone, isRealDate, isNotFuture, isValidPhone, isValidCpf } from '../services/masks';
 
 // Catálogo para os dropdowns (serviços configuráveis entram com a tela "Serviços")
 const DEFAULT_SERVICES = ['Psicoterapia', 'Avaliação', 'Acompanhamento'];
@@ -164,20 +165,32 @@ export default function NovoPacienteModal({ visible, onClose, onSaved, professio
       setError('Informe um telefone de contato.');
       return;
     }
+    if (!isValidPhone(telefone)) {
+      setError('Telefone incompleto. Use DDD + número, ex.: 61 9 0000-0000.');
+      return;
+    }
     if (email.trim() && !EMAIL_REGEX.test(email.trim())) {
       setError('Informe um e-mail válido.');
       return;
     }
-    if (nascimento.trim() && !DATE_BR.test(nascimento.trim())) {
-      setError('Nascimento no formato DD/MM/AAAA.');
+    if (nascimento.trim() && (!DATE_BR.test(nascimento.trim()) || !isRealDate(nascimento.trim()))) {
+      setError('Nascimento inválido. Use DD/MM/AAAA com uma data que exista.');
+      return;
+    }
+    if (nascimento.trim() && !isNotFuture(nascimento.trim())) {
+      setError('A data de nascimento não pode estar no futuro.');
+      return;
+    }
+    if (/^\d{3}\.\d{3}\.\d{3}-\d{2}$/.test(documento.trim()) && !isValidCpf(documento)) {
+      setError('CPF inválido (dígito verificador não confere).');
       return;
     }
     if (!servico.trim()) {
       setError('Selecione o serviço.');
       return;
     }
-    if (inicio.trim() && !DATE_BR.test(inicio.trim())) {
-      setError('Início do tratamento no formato DD/MM/AAAA.');
+    if (inicio.trim() && (!DATE_BR.test(inicio.trim()) || !isRealDate(inicio.trim()))) {
+      setError('Início do tratamento inválido. Use DD/MM/AAAA com uma data que exista.');
       return;
     }
 
@@ -276,7 +289,7 @@ export default function NovoPacienteModal({ visible, onClose, onSaved, professio
               placeholder="Como o paciente deve aparecer no sistema"
               value={nome}
               onChangeText={(t) => {
-                setNome(t);
+                setNome(maskName(t));
                 if (error) setError(null);
               }}
               autoCapitalize="words"
@@ -289,10 +302,10 @@ export default function NovoPacienteModal({ visible, onClose, onSaved, professio
                 <FormField
                   label="Telefone"
                   required
-                  placeholder="(11) 3000-0000"
+                  placeholder="61 9 0000-0000"
                   value={telefone}
                   onChangeText={(t) => {
-                    setTelefone(t);
+                    setTelefone(maskPhone(t));
                     if (error) setError(null);
                   }}
                   keyboardType="phone-pad"
@@ -305,7 +318,7 @@ export default function NovoPacienteModal({ visible, onClose, onSaved, professio
                   label="E-mail"
                   placeholder="nome@clinica.com.br"
                   value={email}
-                  onChangeText={setEmail}
+                  onChangeText={(t) => setEmail(maskEmail(t))}
                   keyboardType="email-address"
                   autoCapitalize="none"
                   autoCorrect={false}
@@ -321,7 +334,7 @@ export default function NovoPacienteModal({ visible, onClose, onSaved, professio
                   label="Nascimento"
                   placeholder="DD/MM/AAAA"
                   value={nascimento}
-                  onChangeText={setNascimento}
+                  onChangeText={(t) => setNascimento(maskDate(t))}
                   keyboardType="number-pad"
                   maxLength={10}
                   returnKeyType="next"
@@ -332,7 +345,7 @@ export default function NovoPacienteModal({ visible, onClose, onSaved, professio
                   label="Documento"
                   placeholder="CPF ou RG"
                   value={documento}
-                  onChangeText={setDocumento}
+                  onChangeText={(t) => setDocumento(maskDocument(t))}
                   autoCorrect={false}
                   maxLength={20}
                   returnKeyType="next"
@@ -354,7 +367,7 @@ export default function NovoPacienteModal({ visible, onClose, onSaved, professio
                 <FormField
                   label="Início do tratamento"
                   value={inicio}
-                  onChangeText={setInicio}
+                  onChangeText={(t) => setInicio(maskDate(t))}
                   keyboardType="number-pad"
                   maxLength={10}
                   returnKeyType="next"
@@ -395,7 +408,7 @@ export default function NovoPacienteModal({ visible, onClose, onSaved, professio
               label="Responsável"
               placeholder="Nome do responsável"
               value={responsavel}
-              onChangeText={setResponsavel}
+              onChangeText={(t) => setResponsavel(maskName(t))}
               autoCapitalize="words"
               maxLength={80}
               returnKeyType="next"

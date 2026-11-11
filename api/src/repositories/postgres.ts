@@ -33,6 +33,31 @@ const nowIso = () => new Date().toISOString();
 const str = (v: unknown): string => String(v);
 const strOrNull = (v: unknown): string | null => (v === null || v === undefined ? null : String(v));
 
+// ---- Conversão de datas (banco usa DATE / TIME / TIMESTAMPTZ; a API expõe texto) ----
+const pad2 = (n: number) => String(n).padStart(2, '0');
+/** TIMESTAMPTZ → ISO-8601 UTC ("2026-11-11T01:23:34.041Z"). */
+const isoTs = (v: unknown): string | null =>
+  v === null || v === undefined ? null : (v instanceof Date ? v : new Date(String(v))).toISOString();
+/** DATE → "AAAA-MM-DD" (sem deslocar o dia por fuso). */
+const isoDate = (v: unknown): string | null => {
+  if (v === null || v === undefined) return null;
+  if (v instanceof Date) return `${v.getUTCFullYear()}-${pad2(v.getUTCMonth() + 1)}-${pad2(v.getUTCDate())}`;
+  return String(v).slice(0, 10);
+};
+/** DATE → "DD/MM/AAAA". */
+const brDate = (v: unknown): string | null => {
+  const iso = isoDate(v);
+  return iso ? `${iso.slice(8, 10)}/${iso.slice(5, 7)}/${iso.slice(0, 4)}` : null;
+};
+/** "DD/MM/AAAA" → "AAAA-MM-DD" (parâmetro para coluna DATE). */
+const brToIso = (v: unknown): string | null => {
+  if (v === null || v === undefined || v === '') return null;
+  const m = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(String(v));
+  return m ? `${m[3]}-${m[2]}-${m[1]}` : String(v);
+};
+/** TIME → "HH:MM". */
+const hhmm = (v: unknown): string | null => (v === null || v === undefined ? null : String(v).slice(0, 5));
+
 /** Placeholders $n incrementais para montar SQL dinâmico com segurança. */
 class Params {
   readonly values: unknown[] = [];
@@ -50,7 +75,7 @@ class PgUserRepository implements IUserRepository {
     const id = randomUUID();
     await this.db.query(
       `INSERT INTO users (id, name, email, password_hash, salt, crp, role, clinic_id, created_at)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9::timestamptz)`,
       [id, data.name, data.email, data.passwordHash, data.salt, data.crp, data.role, data.clinicId, nowIso()]
     );
     return (await this.findById(id))!;
@@ -96,7 +121,7 @@ class PgUserRepository implements IUserRepository {
       crp: strOrNull(r.crp),
       role: str(r.role) as UserRole,
       clinicId: strOrNull(r.clinic_id),
-      createdAt: str(r.created_at),
+      createdAt: isoTs(r.created_at)!,
     };
   }
 }
@@ -121,7 +146,7 @@ class PgClinicRepository implements IClinicRepository {
     const now = nowIso();
     await this.db.query(
       `INSERT INTO clinics (id, name, unit, technical_responsible, cnpj, phone, email, address, acronym, owner_user_id, created_at, updated_at)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`,
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11::timestamptz, $12::timestamptz)`,
       [
         id,
         data.name,
@@ -152,7 +177,7 @@ class PgClinicRepository implements IClinicRepository {
       if (data[key] !== undefined) sets.push(`${column} = ${p.add(data[key] ?? null)}`);
     }
     if (sets.length > 0) {
-      sets.push(`updated_at = ${p.add(nowIso())}`);
+      sets.push(`updated_at = ${p.add(nowIso())}::timestamptz`);
       await this.db.query(`UPDATE clinics SET ${sets.join(', ')} WHERE id = ${p.add(id)}`, p.values);
     }
     return this.findById(id);
@@ -170,8 +195,8 @@ class PgClinicRepository implements IClinicRepository {
       address: strOrNull(r.address),
       acronym: strOrNull(r.acronym),
       ownerUserId: strOrNull(r.owner_user_id),
-      createdAt: str(r.created_at),
-      updatedAt: str(r.updated_at),
+      createdAt: isoTs(r.created_at)!,
+      updatedAt: isoTs(r.updated_at)!,
     };
   }
 }
@@ -181,7 +206,7 @@ class PgSessionRepository implements ISessionRepository {
   constructor(private readonly db: Db) {}
 
   async create(tokenHash: string, userId: string, expiresAt: string): Promise<void> {
-    await this.db.query('INSERT INTO sessions (token_hash, user_id, created_at, expires_at) VALUES ($1, $2, $3, $4)', [
+    await this.db.query('INSERT INTO sessions (token_hash, user_id, created_at, expires_at) VALUES ($1, $2, $3::timestamptz, $4::timestamptz)', [
       tokenHash,
       userId,
       nowIso(),
@@ -191,7 +216,7 @@ class PgSessionRepository implements ISessionRepository {
 
   async find(tokenHash: string): Promise<Session | null> {
     const [row] = await this.db.query('SELECT user_id, expires_at FROM sessions WHERE token_hash = $1', [tokenHash]);
-    return row ? { userId: str(row.user_id), expiresAt: str(row.expires_at) } : null;
+    return row ? { userId: str(row.user_id), expiresAt: isoTs(row.expires_at)! } : null;
   }
 
   async delete(tokenHash: string): Promise<void> {
@@ -207,7 +232,7 @@ class PgSessionRepository implements ISessionRepository {
   }
 
   async deleteExpired(now: string): Promise<number> {
-    const rows = await this.db.query('DELETE FROM sessions WHERE expires_at <= $1 RETURNING 1', [now]);
+    const rows = await this.db.query('DELETE FROM sessions WHERE expires_at <= $1::timestamptz RETURNING 1', [now]);
     return rows.length;
   }
 }
@@ -217,7 +242,8 @@ interface Column {
   key: string;
   column: string;
   encrypted?: boolean;
-  type?: 'int' | 'bool';
+  /** Tipo no PostgreSQL quando não for texto. dateBr = DATE exposto como DD/MM/AAAA. */
+  type?: 'int' | 'bool' | 'timestamp' | 'date' | 'dateBr' | 'time';
 }
 
 interface EntityDef {
@@ -227,12 +253,15 @@ interface EntityDef {
   searchColumn?: string;
 }
 
+/** Cast explícito do parâmetro por tipo (o driver envia texto). */
+const CAST: Record<string, string> = { timestamp: '::timestamptz', date: '::date', dateBr: '::date', time: '::time' };
+
 const BASE_COLUMNS: Column[] = [
   { key: 'id', column: 'id' },
   { key: 'clinicId', column: 'clinic_id' },
-  { key: 'createdAt', column: 'created_at' },
-  { key: 'updatedAt', column: 'updated_at' },
-  { key: 'deletedAt', column: 'deleted_at' },
+  { key: 'createdAt', column: 'created_at', type: 'timestamp' },
+  { key: 'updatedAt', column: 'updated_at', type: 'timestamp' },
+  { key: 'deletedAt', column: 'deleted_at', type: 'timestamp' },
 ];
 
 const PATIENTS: EntityDef = {
@@ -243,10 +272,10 @@ const PATIENTS: EntityDef = {
     { key: 'name', column: 'name' },
     { key: 'phone', column: 'phone' },
     { key: 'email', column: 'email' },
-    { key: 'birthDate', column: 'birth_date' },
+    { key: 'birthDate', column: 'birth_date', type: 'dateBr' },
     { key: 'document', column: 'document_enc', encrypted: true },
     { key: 'service', column: 'service' },
-    { key: 'treatmentStart', column: 'treatment_start' },
+    { key: 'treatmentStart', column: 'treatment_start', type: 'dateBr' },
     { key: 'status', column: 'status' },
     { key: 'professional', column: 'professional' },
     { key: 'address', column: 'address_enc', encrypted: true },
@@ -271,10 +300,10 @@ const SERVICES: EntityDef = {
 
 const EVOLUTIONS: EntityDef = {
   table: 'evolutions',
-  orderBy: 'created_at DESC',
+  orderBy: 'session_date DESC, created_at DESC',
   columns: [
     { key: 'patientId', column: 'patient_id' },
-    { key: 'sessionDate', column: 'session_date' },
+    { key: 'sessionDate', column: 'session_date', type: 'dateBr' },
     { key: 'content', column: 'content_enc', encrypted: true },
     { key: 'authorId', column: 'author_id' },
     { key: 'authorName', column: 'author_name' },
@@ -286,8 +315,8 @@ const APPOINTMENTS: EntityDef = {
   orderBy: 'date, time',
   columns: [
     { key: 'patientId', column: 'patient_id' },
-    { key: 'date', column: 'date' },
-    { key: 'time', column: 'time' },
+    { key: 'date', column: 'date', type: 'date' },
+    { key: 'time', column: 'time', type: 'time' },
     { key: 'durationMin', column: 'duration_min', type: 'int' },
     { key: 'service', column: 'service' },
     { key: 'professional', column: 'professional' },
@@ -316,6 +345,7 @@ class PgSyncRepository<T extends SyncRecord> implements ISyncRepository<T> {
       if (c.encrypted) return this.cipher.encrypt(v as string | null);
       if (c.type === 'bool') return v === null ? null : Boolean(v);
       if (c.type === 'int') return v === null ? null : Number(v);
+      if (c.type === 'dateBr') return brToIso(v);
       return v;
     });
     const names = [...this.cols.map((c) => c.column), 'rev'];
@@ -324,7 +354,7 @@ class PgSyncRepository<T extends SyncRecord> implements ISyncRepository<T> {
       // Trava a linha do contador: revisões saem em ordem de commit (cursor do sync sem buracos).
       const [r] = await t.query<{ value: number }>("UPDATE meta SET value = value + 1 WHERE key = 'rev' RETURNING value");
       await t.query(
-        `INSERT INTO ${this.def.table} (${names.join(', ')}) VALUES (${names.map((_, i) => `$${i + 1}`).join(', ')})
+        `INSERT INTO ${this.def.table} (${names.join(', ')}) VALUES (${names.map((_, i) => `$${i + 1}${CAST[this.cols[i]?.type ?? ''] ?? ''}`).join(', ')})
          ON CONFLICT (id) DO UPDATE SET ${updates.map((n) => `${n} = excluded.${n}`).join(', ')}`,
         [...values, Number(r!.value)]
       );
@@ -348,8 +378,9 @@ class PgSyncRepository<T extends SyncRecord> implements ISyncRepository<T> {
     if (opts.range) {
       const col = this.byKey.get(opts.range.key);
       if (!col || col.encrypted) throw new Error(`Intervalo inválido: ${opts.range.key}`);
-      if (opts.range.from) where.push(`${col.column} >= ${p.add(opts.range.from)}`);
-      if (opts.range.to) where.push(`${col.column} <= ${p.add(opts.range.to)}`);
+      const cast = CAST[col.type ?? ''] ?? '';
+      if (opts.range.from) where.push(`${col.column} >= ${p.add(opts.range.from)}${cast}`);
+      if (opts.range.to) where.push(`${col.column} <= ${p.add(opts.range.to)}${cast}`);
     }
     if (opts.search && this.def.searchColumn) {
       where.push(`${this.def.searchColumn} ILIKE ${p.add(`%${opts.search.replace(/[\\%_]/g, (m) => `\\${m}`)}%`)}`);
@@ -406,6 +437,10 @@ class PgSyncRepository<T extends SyncRecord> implements ISyncRepository<T> {
       const raw = r[c.column];
       if (c.type === 'bool') out[c.key] = raw === null || raw === undefined ? null : raw === true || raw === 1;
       else if (c.type === 'int') out[c.key] = raw === null || raw === undefined ? null : Number(raw);
+      else if (c.type === 'timestamp') out[c.key] = isoTs(raw);
+      else if (c.type === 'date') out[c.key] = isoDate(raw);
+      else if (c.type === 'dateBr') out[c.key] = brDate(raw);
+      else if (c.type === 'time') out[c.key] = hhmm(raw);
       else out[c.key] = c.encrypted ? this.cipher.decrypt(strOrNull(raw)) : strOrNull(raw);
     }
     return out as T;
@@ -418,7 +453,7 @@ class PgAuditRepository implements IAuditRepository {
 
   async record(e: Omit<AuditEntry, 'id' | 'at'>): Promise<void> {
     await this.db.query(
-      'INSERT INTO audit_log (at, user_id, clinic_id, action, entity, entity_id, ip) VALUES ($1, $2, $3, $4, $5, $6, $7)',
+      'INSERT INTO audit_log (at, user_id, clinic_id, action, entity, entity_id, ip) VALUES ($1::timestamptz, $2, $3, $4, $5, $6, $7)',
       [nowIso(), e.userId, e.clinicId, e.action, e.entity, e.entityId, e.ip]
     );
   }
@@ -435,7 +470,7 @@ class PgAuditRepository implements IAuditRepository {
     return {
       items: rows.map((r) => ({
         id: Number(r.id),
-        at: str(r.at),
+        at: isoTs(r.at)!,
         userId: str(r.user_id),
         clinicId: strOrNull(r.clinic_id),
         action: str(r.action),

@@ -10,6 +10,7 @@ import PasswordField from '../componentes/PasswordField';
 import PrimaryButton from '../componentes/PrimaryButton';
 import TextButton from '../componentes/TextButton';
 import { useAuth } from '../auth/AuthProvider';
+import { maskEmail } from '../services/masks';
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
@@ -65,7 +66,7 @@ export default function LoginScreen({ onCadastrar }: Props = {}) {
         placeholder="nome@clinica.com.br"
         value={email}
         onChangeText={(t) => {
-          setEmail(t);
+          setEmail(maskEmail(t));
           if (error) setError(null);
         }}
         keyboardType="email-address"

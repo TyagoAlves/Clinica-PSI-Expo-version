@@ -17,6 +17,7 @@ import { useAppNav } from '../navigation/AppNav';
 import { useCatalogs, useLocalList } from '../hooks/useClinicData';
 import { initials, payloadToFields } from '../services/patientForm';
 import { PATIENT_STATUSES, type PatientStatus } from '../services/apiTypes';
+import { maskPhone } from '../services/masks';
 
 type Filtro = 'Todos' | PatientStatus;
 const FILTROS: Filtro[] = ['Todos', ...PATIENT_STATUSES];
@@ -115,7 +116,7 @@ export default function PacientesScreen() {
                 {p.name}
               </Text>
               <Text style={styles.meta} numberOfLines={1}>
-                {[p.phone, p.service].filter(Boolean).join(' · ')}
+                {[p.phone ? maskPhone(p.phone) : null, p.service].filter(Boolean).join(' · ')}
               </Text>
             </View>
             <View style={styles.right}>

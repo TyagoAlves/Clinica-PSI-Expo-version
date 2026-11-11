@@ -6,6 +6,7 @@ import FormField from './FormField';
 import PasswordField from './PasswordField';
 import SheetModal, { sheetStyles } from './SheetModal';
 import type { ApiUser } from '../services/apiTypes';
+import { maskCrp, maskName } from '../services/masks';
 
 const CRP_REGEX = /^(CRP\s*)?\d{2}\s*\/\s*\d{3,6}$/i;
 
@@ -71,8 +72,8 @@ export default function PerfilModal({ visible, onClose, user, onSaveProfile, onC
       saving={saving}
       error={error}
     >
-      <FormField id="perfil-nome" label="Nome completo" required value={nome} onChangeText={setNome} maxLength={120} autoCapitalize="words" />
-      <FormField id="perfil-crp" label="CRP" placeholder="CRP 06/00000" value={crp} onChangeText={setCrp} maxLength={20} />
+      <FormField id="perfil-nome" label="Nome completo" required value={nome} onChangeText={(t) => setNome(maskName(t))} maxLength={120} autoCapitalize="words" />
+      <FormField id="perfil-crp" label="CRP" placeholder="CRP 06/00000" value={crp} onChangeText={(t) => setCrp(maskCrp(t))} keyboardType="number-pad" maxLength={20} />
       <Text style={sheetStyles.sectionTitle}>Trocar senha (opcional)</Text>
       <PasswordField id="perfil-senha-atual" label="Senha atual" value={atual} onChangeText={setAtual} autoCapitalize="none" />
       <PasswordField id="perfil-senha-nova" label="Nova senha (mínimo 6)" value={nova} onChangeText={setNova} autoCapitalize="none" />

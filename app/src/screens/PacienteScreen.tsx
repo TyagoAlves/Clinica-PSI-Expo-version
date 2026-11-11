@@ -19,6 +19,7 @@ import SessaoModal from '../componentes/SessaoModal';
 import type { LocalAppointment } from '../database/repositories/types';
 import type { AppointmentFields } from '../services/apiTypes';
 import { addMinutes, isoToBr, todayIso } from '../services/format';
+import { maskDocument, maskPhone } from '../services/masks';
 
 const STATUS_COLOR: Record<string, string> = { 'Em tratamento': '#15803D', Pausado: '#B45309', Alta: colors.textMuted };
 
@@ -140,10 +141,10 @@ export default function PacienteScreen({ id }: { id: string }) {
           <Text style={[styles.status, { color: STATUS_COLOR[paciente.status] }]}>{paciente.status}</Text>
         </View>
         {paciente.dirty ? <Text style={styles.pending}>Alterações ainda não enviadas ao servidor</Text> : null}
-        <Campo label="Telefone" value={paciente.phone} />
+        <Campo label="Telefone" value={paciente.phone ? maskPhone(paciente.phone) : null} />
         <Campo label="E-mail" value={paciente.email} />
         <Campo label="Nascimento" value={paciente.birthDate} />
-        <Campo label="Documento" value={paciente.document} />
+        <Campo label="Documento" value={paciente.document ? maskDocument(paciente.document) : null} />
         <Campo label="Serviço" value={paciente.service} />
         <Campo label="Início do tratamento" value={paciente.treatmentStart} />
         <Campo label="Profissional responsável" value={paciente.professional} />

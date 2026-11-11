@@ -35,13 +35,13 @@ describe('POST /api/v1/sync', () => {
     const p = patientChange();
     await request(app).post('/api/v1/sync').set(auth(token)).send({ changes: { patients: [p] } });
 
-    const newer = { ...p, name: 'João (novo)', updatedAt: later(p.updatedAt, 60_000) };
+    const newer = { ...p, name: 'João Novo', updatedAt: later(p.updatedAt, 60_000) };
     await request(app).post('/api/v1/sync').set(auth(token)).send({ changes: { patients: [newer] } });
 
-    const stale = { ...p, name: 'João (velho)', updatedAt: later(p.updatedAt, 1_000) };
+    const stale = { ...p, name: 'João Velho', updatedAt: later(p.updatedAt, 1_000) };
     const res = await request(app).post('/api/v1/sync').set(auth(token)).send({ lastPulledRev: 0, changes: { patients: [stale] } });
     expect(res.body.rejected).toEqual([p.id]);
-    expect(res.body.changes.patients[0].name).toBe('João (novo)');
+    expect(res.body.changes.patients[0].name).toBe('João Novo');
   });
 
   it('exclusão propaga como deletedAt', async () => {

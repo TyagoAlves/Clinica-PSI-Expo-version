@@ -1,6 +1,17 @@
 // Schemas de entrada (zod) — mesmas regras e mensagens das telas do app.
 import { z } from 'zod';
 import { APPOINTMENT_STATUSES, PATIENT_STATUSES } from '../domain/types.js';
+import {
+  collapseSpaces,
+  isNotFutureBr,
+  isRealDateBr,
+  isValidCnpj,
+  isValidCpf,
+  isValidPhone,
+  normalizeCrp,
+  onlyDigits,
+  PERSON_NAME,
+} from '../domain/validators.js';
 
 /** Texto opcional: '' / null / ausente viram null. */
 const optionalText = (max = 200) =>
@@ -11,26 +22,58 @@ const optionalText = (max = 200) =>
     .nullish()
     .transform((v) => (v ? v : null));
 
-const DATE_BR = /^(0[1-9]|[12]\d|3[01])\/(0[1-9]|1[0-2])\/\d{4}$/;
-const optionalDateBr = (message: string) =>
-  optionalText(10).refine((v) => v === null || DATE_BR.test(v), message);
+/** Data DD/MM/AAAA que existe no calendário (rejeita 31/02). */
+const optionalDateBr = (message: string) => optionalText(10).refine((v) => v === null || isRealDateBr(v), message);
 
-const optionalEmail = optionalText(80).refine(
-  (v) => v === null || z.string().email().safeParse(v).success,
-  'Informe um e-mail válido.'
-);
+/** E-mail: guardado em minúsculas. */
+const optionalEmail = optionalText(80)
+  .transform((v) => (v ? v.toLowerCase() : null))
+  .refine((v) => v === null || z.string().email().safeParse(v).success, 'Informe um e-mail válido.');
 
-export const CRP_REGEX = /^(CRP\s*)?\d{2}\s*\/\s*\d{3,6}$/i;
-export const CNPJ_REGEX = /^(\d{2}\.?\d{3}\.?\d{3}\/?\d{4}-?\d{2}|\d{11}|\d{14})$/;
+/** Telefone: validado e guardado SÓ com dígitos (o app formata na tela). */
+const optionalPhone = optionalText(20)
+  .refine((v) => v === null || isValidPhone(v), 'Telefone inválido. Use DDD + número (10 ou 11 dígitos).')
+  .transform((v) => (v ? onlyDigits(v) : null));
+
+/** CRP: aceita variações e guarda no formato padrão "CRP 06/123456". */
+const optionalCrp = optionalText(20)
+  .refine((v) => v === null || normalizeCrp(v) !== null, 'CRP no formato CRP 06/00000, ex.: CRP 06/123456.')
+  .transform((v) => (v ? normalizeCrp(v) : null));
+
+/** Nome de pessoa: só letras (com acento), espaço, apóstrofo, hífen e ponto; espaços colapsados. */
+const personName = (required: string) =>
+  z
+    .string({ required_error: required })
+    .transform(collapseSpaces)
+    .pipe(z.string().min(1, required).max(120).regex(PERSON_NAME, 'O nome deve ter só letras.'));
+const optionalPersonName = optionalText(120)
+  .transform((v) => (v ? collapseSpaces(v) : null))
+  .refine((v) => v === null || PERSON_NAME.test(v), 'O nome deve ter só letras.');
+
+/** Documento do paciente: CPF (validado, guardado só com dígitos) ou RG (letras/números). */
+const optionalDocument = optionalText(30)
+  .transform((v) => {
+    if (!v) return null;
+    return /^[\d.\-\s]+$/.test(v) ? onlyDigits(v) : v.toUpperCase().replace(/[^0-9A-Z]/g, '');
+  })
+  .refine((v) => v === null || !/^\d{11}$/.test(v) || isValidCpf(v), 'CPF inválido (dígito verificador).');
+
+/** CNPJ ou CPF da clínica: guardado só com dígitos, com dígito verificador. */
+const optionalCpfCnpj = optionalText(18)
+  .transform((v) => (v ? onlyDigits(v) : null))
+  .refine(
+    (v) => v === null || (v.length === 11 ? isValidCpf(v) : v.length === 14 ? isValidCnpj(v) : false),
+    'CNPJ ou CPF inválido (confira os números).'
+  );
 
 export const RegisterSchema = z.object({
-  name: z.string({ required_error: 'Informe o nome.' }).trim().min(1, 'Informe o nome.').max(120),
-  email: z.string({ required_error: 'Informe um e-mail válido.' }).trim().email('Informe um e-mail válido.').max(80),
+  name: personName('Informe o nome.'),
+  email: z.string({ required_error: 'Informe um e-mail válido.' }).trim().toLowerCase().email('Informe um e-mail válido.').max(80),
   password: z
     .string({ required_error: 'A senha precisa de ao menos 6 caracteres.' })
     .min(6, 'A senha precisa de ao menos 6 caracteres.')
     .max(128),
-  crp: optionalText(20).refine((v) => v === null || CRP_REGEX.test(v), 'CRP no formato CRP 06/00000, ex.: CRP 06/123456.'),
+  crp: optionalCrp,
   role: z.enum(['psychologist', 'admin']).optional(),
 });
 
@@ -42,29 +85,34 @@ export const LoginSchema = z.object({
 const ClinicFields = {
   name: z.string({ required_error: 'Informe o nome da clínica.' }).trim().min(1, 'Informe o nome da clínica.').max(120),
   unit: optionalText(64),
-  technicalResponsible: optionalText(80),
-  cnpj: optionalText(18).refine((v) => v === null || CNPJ_REGEX.test(v), 'CNPJ no formato 00.000.000/0001-90.'),
-  phone: optionalText(20),
+  technicalResponsible: optionalPersonName,
+  cnpj: optionalCpfCnpj,
+  phone: optionalPhone,
   email: optionalEmail,
   address: optionalText(160),
-  acronym: optionalText(3).transform((v) => (v ? v.toUpperCase() : null)),
+  acronym: optionalText(3)
+    .transform((v) => (v ? v.toUpperCase() : null))
+    .refine((v) => v === null || /^[A-ZÀ-ÖØ-Þ]{1,3}$/.test(v), 'A sigla deve ter até 3 letras.'),
 };
 
 export const CreateClinicSchema = z.object(ClinicFields);
 export const UpdateClinicSchema = z.object(ClinicFields).partial();
 
 export const PatientFieldsSchema = z.object({
-  name: z.string({ required_error: 'Informe o nome completo.' }).trim().min(1, 'Informe o nome completo.').max(120),
-  phone: optionalText(20),
+  name: personName('Informe o nome completo.'),
+  phone: optionalPhone,
   email: optionalEmail,
-  birthDate: optionalDateBr('Nascimento no formato DD/MM/AAAA.'),
-  document: optionalText(30),
+  birthDate: optionalDateBr('Nascimento inválido (DD/MM/AAAA).').refine(
+    (v) => v === null || isNotFutureBr(v),
+    'A data de nascimento não pode estar no futuro.'
+  ),
+  document: optionalDocument,
   service: optionalText(80),
-  treatmentStart: optionalDateBr('Início do tratamento no formato DD/MM/AAAA.'),
+  treatmentStart: optionalDateBr('Início do tratamento inválido (DD/MM/AAAA).'),
   status: z.enum(PATIENT_STATUSES).default('Em tratamento'),
   professional: optionalText(120),
   address: optionalText(200),
-  guardian: optionalText(120),
+  guardian: optionalPersonName,
   complaint: optionalText(4000),
   notes: optionalText(4000),
 });
@@ -123,8 +171,8 @@ export const AppointmentRangeSchema = z.object({
 
 export const ProfileSchema = z
   .object({
-    name: z.string().trim().min(1, 'Informe o nome.').max(120),
-    crp: optionalText(20).refine((v) => v === null || CRP_REGEX.test(v), 'CRP no formato CRP 06/00000, ex.: CRP 06/123456.'),
+    name: personName('Informe o nome.'),
+    crp: optionalCrp,
   })
   .partial();
 
@@ -136,7 +184,8 @@ export const ChangePasswordSchema = z.object({
     .max(128),
 });
 
-const requiredDateBr = (message: string) => z.string({ required_error: message }).trim().regex(DATE_BR, message);
+const requiredDateBr = (message: string) =>
+  z.string({ required_error: message }).trim().refine((v) => isRealDateBr(v), message);
 
 export const EvolutionCreateSchema = z.object({
   sessionDate: requiredDateBr('Data da sessão no formato DD/MM/AAAA.'),

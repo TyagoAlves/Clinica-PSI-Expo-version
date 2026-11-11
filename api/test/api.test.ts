@@ -135,7 +135,7 @@ describe('pacientes', () => {
     const badDate = await request(app)
       .post(base)
       .set(auth(token))
-      .send({ name: 'João', phone: '11', service: 'Psicoterapia', birthDate: '2020-01-01' });
+      .send({ name: 'João', phone: '11999990000', service: 'Psicoterapia', birthDate: '2020-01-01' });
     expect(badDate.status).toBe(400);
 
     const created = await request(app)
@@ -160,7 +160,7 @@ describe('pacientes', () => {
     const p = await request(app)
       .post(`/api/v1/clinics/${a.clinicId}/patients`)
       .set(auth(a.token))
-      .send({ name: 'João', phone: '11', service: 'Psicoterapia' });
+      .send({ name: 'João', phone: '11999990000', service: 'Psicoterapia' });
 
     expect((await request(app).get(`/api/v1/clinics/${a.clinicId}/patients`).set(auth(b.token))).status).toBe(403);
     expect((await request(app).get(`/api/v1/patients/${p.body.id}`).set(auth(b.token))).status).toBe(404);
@@ -173,12 +173,12 @@ describe('pacientes', () => {
     const created = await request(app)
       .post(`/api/v1/clinics/${clinicId}/patients`)
       .set(auth(token))
-      .send({ name: 'João', phone: '11', service: 'Psicoterapia', complaint: 'Crises de pânico', document: '123.456.789-00' });
+      .send({ name: 'João', phone: '11999990000', service: 'Psicoterapia', complaint: 'Crises de pânico', document: '529.982.247-25' });
 
     const row = await one<Record<string, string>>(db, 'SELECT complaint_enc, document_enc FROM patients');
     expect(row.complaint_enc).toMatch(/^v1:/);
     expect(row.complaint_enc).not.toContain('pânico');
-    expect(row.document_enc).not.toContain('123.456');
+    expect(row.document_enc).not.toContain('52998224725');
     expect(created.body.complaint).toBe('Crises de pânico');
   });
 

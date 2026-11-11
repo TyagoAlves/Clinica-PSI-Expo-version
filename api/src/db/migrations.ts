@@ -162,4 +162,51 @@ export const MIGRATIONS: Migration[] = [
       ALTER TABLE schema_migrations ENABLE ROW LEVEL SECURITY;
     `,
   },
+  {
+    version: 2,
+    name: 'tipos_de_data_reais',
+    // Datas passam de TEXTO para tipos reais (ordenáveis/filtráveis no banco). Converte os dados existentes.
+    // A API continua expondo os mesmos formatos (DD/MM/AAAA, AAAA-MM-DD, HH:MM, ISO-8601): ver repositories/postgres.ts.
+    sql: `
+      -- Datas de calendário (sem fuso)
+      ALTER TABLE patients
+        ALTER COLUMN birth_date TYPE date USING to_date(birth_date, 'DD/MM/YYYY'),
+        ALTER COLUMN treatment_start TYPE date USING to_date(treatment_start, 'DD/MM/YYYY');
+      ALTER TABLE evolutions ALTER COLUMN session_date TYPE date USING to_date(session_date, 'DD/MM/YYYY');
+      ALTER TABLE appointments
+        ALTER COLUMN date TYPE date USING date::date,
+        ALTER COLUMN time TYPE time USING time::time;
+
+      -- Momentos (com fuso, UTC)
+      ALTER TABLE users ALTER COLUMN created_at TYPE timestamptz USING created_at::timestamptz;
+      ALTER TABLE clinics
+        ALTER COLUMN created_at TYPE timestamptz USING created_at::timestamptz,
+        ALTER COLUMN updated_at TYPE timestamptz USING updated_at::timestamptz;
+      ALTER TABLE sessions
+        ALTER COLUMN created_at TYPE timestamptz USING created_at::timestamptz,
+        ALTER COLUMN expires_at TYPE timestamptz USING expires_at::timestamptz;
+      ALTER TABLE audit_log ALTER COLUMN at TYPE timestamptz USING at::timestamptz;
+      ALTER TABLE patients
+        ALTER COLUMN created_at TYPE timestamptz USING created_at::timestamptz,
+        ALTER COLUMN updated_at TYPE timestamptz USING updated_at::timestamptz,
+        ALTER COLUMN deleted_at TYPE timestamptz USING deleted_at::timestamptz;
+      ALTER TABLE services
+        ALTER COLUMN created_at TYPE timestamptz USING created_at::timestamptz,
+        ALTER COLUMN updated_at TYPE timestamptz USING updated_at::timestamptz,
+        ALTER COLUMN deleted_at TYPE timestamptz USING deleted_at::timestamptz;
+      ALTER TABLE evolutions
+        ALTER COLUMN created_at TYPE timestamptz USING created_at::timestamptz,
+        ALTER COLUMN updated_at TYPE timestamptz USING updated_at::timestamptz,
+        ALTER COLUMN deleted_at TYPE timestamptz USING deleted_at::timestamptz;
+      ALTER TABLE appointments
+        ALTER COLUMN created_at TYPE timestamptz USING created_at::timestamptz,
+        ALTER COLUMN updated_at TYPE timestamptz USING updated_at::timestamptz,
+        ALTER COLUMN deleted_at TYPE timestamptz USING deleted_at::timestamptz;
+
+      -- Prontuário: evolução mais recente primeiro pela data da sessão
+      CREATE INDEX idx_evolutions_patient_date ON evolutions(patient_id, session_date DESC);
+      -- Aniversariantes / busca por idade
+      CREATE INDEX idx_patients_birth ON patients(clinic_id, birth_date);
+    `,
+  },
 ];

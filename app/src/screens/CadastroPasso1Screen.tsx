@@ -11,6 +11,7 @@ import Stepper from '../componentes/Stepper';
 import InfoNote from '../componentes/InfoNote';
 import TextButton from '../componentes/TextButton';
 import { useAuth } from '../auth/AuthProvider';
+import { maskCrp, maskEmail, maskName } from '../services/masks';
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 const CRP_REGEX = /^(CRP\s*)?\d{2}\s*\/\s*\d{3,6}$/i;
@@ -108,7 +109,7 @@ export default function CadastroPasso1Screen({ onVoltar, onContinuar, navigation
         placeholder="Como você quer aparecer no sistema"
         value={nome}
         onChangeText={(t) => {
-          setNome(t);
+          setNome(maskName(t));
           clearError();
         }}
         onFocus={() => scrollToEnd?.()}
@@ -123,7 +124,7 @@ export default function CadastroPasso1Screen({ onVoltar, onContinuar, navigation
         placeholder="nome@clinica.com.br"
         value={email}
         onChangeText={(t) => {
-          setEmail(t);
+          setEmail(maskEmail(t));
           clearError();
         }}
         onFocus={() => scrollToEnd?.()}
@@ -173,10 +174,11 @@ export default function CadastroPasso1Screen({ onVoltar, onContinuar, navigation
         placeholder="CRP 06/00000"
         value={crp}
         onChangeText={(t) => {
-          setCrp(t);
+          setCrp(maskCrp(t));
           clearError();
         }}
         onFocus={() => scrollToEnd?.()}
+        keyboardType="number-pad"
         autoCapitalize="characters"
         autoCorrect={false}
         maxLength={24}

@@ -103,7 +103,7 @@ describe('paginação', () => {
   it('pull do /sync vem em páginas até hasMore = false', async () => {
     const { app } = await makeApp({ syncPageSize: 2 });
     const { token } = await signUp(app);
-    const pushed = Array.from({ length: 4 }, (_, i) => patientChange({ name: `P${i}` }));
+    const pushed = Array.from({ length: 4 }, (_, i) => patientChange({ name: `Paciente ${'ABCD'[i]}` }));
     await request(app).post('/api/v1/sync').set(auth(token)).send({ changes: { patients: pushed } });
 
     let cursor = 0;
@@ -183,7 +183,7 @@ describe('rotação de chave', () => {
     await request(appOld)
       .post(`/api/v1/clinics/${clinicId}/patients`)
       .set(auth(token))
-      .send({ name: 'João', phone: '11', service: 'Psicoterapia', complaint: 'Insônia' });
+      .send({ name: 'João', phone: '11999990000', service: 'Psicoterapia', complaint: 'Insônia' });
 
     const newKey = randomBytes(32);
     const rotated = createFieldCipher(newKey, 'v2', new Map([['v1', oldKey]]));

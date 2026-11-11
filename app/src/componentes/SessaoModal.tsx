@@ -8,6 +8,7 @@ import SheetModal, { ChoiceChips, sheetStyles } from './SheetModal';
 import type { LocalAppointment, LocalPatient, LocalService } from '../database/repositories/types';
 import { APPOINTMENT_STATUSES, type AppointmentFields, type AppointmentStatus } from '../services/apiTypes';
 import { brToIso, isoToBr, TIME_HM } from '../services/format';
+import { maskDate, maskInteger, maskTime } from '../services/masks';
 
 type Props = {
   visible: boolean;
@@ -181,13 +182,13 @@ export default function SessaoModal({
 
       <View style={sheetStyles.row}>
         <View style={sheetStyles.col}>
-          <FormField id="sessao-data" label="Data" required placeholder="DD/MM/AAAA" value={data} onChangeText={setData} maxLength={10} keyboardType="numbers-and-punctuation" />
+          <FormField id="sessao-data" label="Data" required placeholder="DD/MM/AAAA" value={data} onChangeText={(t) => setData(maskDate(t))} maxLength={10} keyboardType="number-pad" />
         </View>
         <View style={sheetStyles.col}>
-          <FormField id="sessao-hora" label="Horário" required placeholder="14:00" value={hora} onChangeText={setHora} maxLength={5} keyboardType="numbers-and-punctuation" />
+          <FormField id="sessao-hora" label="Horário" required placeholder="14:00" value={hora} onChangeText={(t) => setHora(maskTime(t))} maxLength={5} keyboardType="numbers-and-punctuation" />
         </View>
       </View>
-      <FormField id="sessao-duracao" label="Duração (min)" value={duracao} onChangeText={setDuracao} keyboardType="number-pad" maxLength={3} />
+      <FormField id="sessao-duracao" label="Duração (min)" value={duracao} onChangeText={(t) => setDuracao(maskInteger(t))} keyboardType="number-pad" maxLength={3} />
 
       {services.length > 0 ? (
         <ChoiceChips label="Serviço" options={services.map((s) => s.name)} value={servico} onChange={escolherServico} />

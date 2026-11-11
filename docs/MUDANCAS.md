@@ -23,6 +23,7 @@
 10. [Reorganização das pastas](#10-reorganização-das-pastas)
 11. [Integração da branch `Dev` do Tyago (Telas 7 a 10)](#11-integração-da-branch-dev-do-tyago-telas-7-a-10)
 12. [Migração para o Supabase (PostgreSQL)](#12-migração-para-o-supabase-postgresql--sqlite-removido-de-tudo)
+13. [Formatação enquanto digita + padronização dos dados](#13-formatação-enquanto-digita--padronização-dos-dados-no-banco)
 
 ---
 
@@ -488,3 +489,54 @@ Rotas novas para o app online: `GET /clinics/:id/evolutions` (últimas da clíni
 O banco SQLite antigo (`api/data/clinica.db`, com a conta de teste `ana@clinica.com.br`) **não foi migrado**:
 eram só dados de teste. No Supabase o banco começa vazio — é preciso criar a conta de novo pelo app.
 O arquivo antigo continua na pasta (ignorado pelo git) e pode ser apagado.
+
+---
+
+## 13. Formatação enquanto digita + padronização dos dados no banco
+
+### 13.1 Como cada dado é guardado no Supabase (verificado em 11/11/2026)
+
+| Dado | Coluna | Como fica no banco | Exemplo |
+|---|---|---|---|
+| Telefone (paciente e clínica) | `phone` | **só dígitos** | `61900000000` |
+| CPF / RG do paciente | `document_enc` | só dígitos (CPF) ou letras+números (RG), **cifrado** | `v1:A/whW+k…` |
+| CNPJ / CPF da clínica | `cnpj` | **só dígitos**, dígito verificador conferido | `11222333000181` |
+| E-mail | `email` | minúsculo | `maria@email.com` |
+| CRP | `crp` | formato padrão | `CRP 06/123456` |
+| Nome de pessoa | `name`, `guardian`, `technical_responsible` | só letras, espaços simples | `Maria da Silva` |
+| Sigla da clínica | `acronym` | até 3 letras maiúsculas | `CP` |
+| Nascimento, início do tratamento, data da evolução | `birth_date`, `treatment_start`, `session_date` | texto `DD/MM/AAAA` (data real; nascimento não futuro) | `10/02/1990` |
+| Data e hora da sessão (agenda) | `date`, `time` | texto `AAAA-MM-DD` e `HH:MM` | `2026-11-11` · `10:30` |
+| Duração / preço do serviço | `duration_min`, `price_cents` | inteiro (minutos / **centavos**) | `50` · `15000` |
+| Ativo | `active` | `boolean` | `true` |
+| Endereço, queixa, observações, evolução | `*_enc` | **cifrados** (AES-256-GCM) | `v1:…` |
+| Senha | `password_hash` + `salt` | só o hash PBKDF2 | `pbkdf2$210000$…` |
+| Criação/edição | `created_at`, `updated_at` | texto ISO-8601 UTC | `2026-11-11T01:23:34.041Z` |
+
+### 13.2 O que mudou
+- **App** (`app/src/services/masks.ts`): máscaras aplicadas enquanto se digita em todos os formulários —
+  telefone `61 9 0000-0000` / `61 3000-0000`, CPF `000.000.000-00`, CNPJ/CPF da clínica (troca sozinho),
+  datas `DD/MM/AAAA`, hora `HH:MM`, CRP `CRP 06/123456`, preço `1.200,00`, duração só números, e-mail sem
+  espaços e minúsculo, nomes sem números/símbolos, sigla só letras. Teclado numérico nos campos numéricos.
+  Validação antes de salvar: telefone completo, CPF/CNPJ com dígito verificador, data que existe, nascimento não futuro.
+- **Telas** mostram telefone/documento formatados (o banco guarda só dígitos).
+- **API** (`api/src/domain/validators.ts` + `routes/schemas.ts`): normaliza e valida as mesmas regras — o
+  banco fica limpo mesmo que outro cliente (web, script) chame a API. +4 testes (**50 no total**).
+
+### 13.3 Datas com tipos reais (migração 2 — `tipos_de_data_reais`) ✅
+- Antes, todas as datas eram **texto**. Agora, no banco:
+  | Coluna | Tipo antes | Tipo agora | Formato na API (inalterado) |
+  |---|---|---|---|
+  | `patients.birth_date`, `treatment_start`, `evolutions.session_date` | TEXT `DD/MM/AAAA` | `DATE` | `DD/MM/AAAA` |
+  | `appointments.date` | TEXT `AAAA-MM-DD` | `DATE` | `AAAA-MM-DD` |
+  | `appointments.time` | TEXT `HH:MM` | `TIME` | `HH:MM` |
+  | `created_at`, `updated_at`, `deleted_at`, `sessions.expires_at`, `audit_log.at` | TEXT ISO | `TIMESTAMPTZ` | ISO-8601 UTC |
+- Os dados existentes no Supabase foram convertidos pela própria migração (sem perda).
+- A conversão fica em `api/src/repositories/postgres.ts` (tipos de coluna `dateBr`, `date`, `time`, `timestamp`
+  com cast explícito no SQL). **O app não mudou**: recebe e envia os mesmos formatos de antes.
+- Ganhos: o banco recusa datas impossíveis, ordena/filtra por período corretamente e o prontuário agora lista as
+  evoluções pela **data da sessão** (mais recente primeiro). Novos índices: `idx_evolutions_patient_date`, `idx_patients_birth`.
+
+### 13.4 Pendências (sugestão)
+- A auditoria registra **toda listagem** do app online (centenas de linhas por sessão de uso). Avaliar
+  registrar só leituras de prontuário/paciente específico e escritas.

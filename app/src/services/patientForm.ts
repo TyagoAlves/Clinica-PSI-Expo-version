@@ -2,6 +2,7 @@
 // Conversão entre o formulário do modal (strings em português) e os campos do paciente.
 import type { NovoPacientePayload } from '../componentes/NovoPacienteModal';
 import { PATIENT_STATUSES, type PatientFields, type PatientStatus } from './apiTypes';
+import { maskDocument, maskPhone } from './masks';
 
 const toNull = (v: string) => (v.trim() ? v.trim() : null);
 
@@ -28,10 +29,10 @@ export function payloadToFields(p: NovoPacientePayload, notes: string | null = n
 export function fieldsToPayload(f: PatientFields): NovoPacientePayload {
   return {
     nome: f.name,
-    telefone: f.phone ?? '',
+    telefone: maskPhone(f.phone ?? ''),
     email: f.email ?? '',
     nascimento: f.birthDate ?? '',
-    documento: f.document ?? '',
+    documento: f.document ? maskDocument(f.document) : '',
     servico: f.service ?? '',
     inicio: f.treatmentStart ?? '',
     situacao: f.status,

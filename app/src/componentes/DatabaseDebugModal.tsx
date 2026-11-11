@@ -9,6 +9,7 @@ import { useSync } from '../sync/SyncProvider';
 import { colors } from '../theme';
 import { API_BASE_URL } from '../config/api';
 import { api } from '../services/api';
+import { maskPhone } from '../services/masks';
 
 type ApiStatus =
   | { state: 'idle' | 'checking' }
@@ -129,7 +130,7 @@ export default function DatabaseDebugModal({ visible, onClose }: { visible: bool
                     </Text>
                     <Text style={styles.itemDetail}>ID: {p.id}</Text>
                     <Text style={styles.itemDetail}>
-                      {[p.phone, p.service, p.status].filter(Boolean).join(' · ')}
+                      {[p.phone ? maskPhone(p.phone) : null, p.service, p.status].filter(Boolean).join(' · ')}
                     </Text>
                     <Text style={styles.itemDetail}>Editado: {new Date(p.updatedAt).toLocaleString('pt-BR')}</Text>
                   </View>

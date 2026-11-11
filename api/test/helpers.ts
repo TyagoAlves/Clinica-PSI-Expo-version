@@ -58,7 +58,7 @@ export async function signUp(app: Express, opts: { email?: string; clinic?: bool
     const c = await request(app)
       .post('/api/v1/clinics')
       .set('Authorization', `Bearer ${token}`)
-      .send({ name: 'Clínica Psi', unit: 'Unidade Pinheiros', cnpj: '12.345.678/0001-90' });
+      .send({ name: 'Clínica Psi', unit: 'Unidade Pinheiros', cnpj: '11.222.333/0001-81' });
     clinicId = c.body.id;
   }
   return { email, token, userId: reg.body.user.id as string, clinicId: clinicId as string };

@@ -62,7 +62,7 @@ const result = await autocannon({
               patients: [
                 {
                   id: randomUUID(),
-                  name: `Paciente ${sent}`,
+                  name: `Paciente ${String.fromCharCode(65 + (sent % 26))}`,
                   phone: '11999990000',
                   service: 'Psicoterapia',
                   status: 'Em tratamento',

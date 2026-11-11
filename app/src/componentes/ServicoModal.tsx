@@ -8,6 +8,7 @@ import SheetModal, { sheetStyles } from './SheetModal';
 import type { LocalService } from '../database/repositories/types';
 import type { ServiceFields } from '../services/apiTypes';
 import { centsToInput, parsePriceToCents } from '../services/format';
+import { maskInteger, maskMoney } from '../services/masks';
 
 type Props = {
   visible: boolean;
@@ -33,7 +34,7 @@ export default function ServicoModal({ visible, onClose, onSave, onDelete, servi
     setNome(service?.name ?? '');
     setDescricao(service?.description ?? '');
     setDuracao(service?.durationMin ? String(service.durationMin) : '50');
-    setPreco(centsToInput(service?.priceCents ?? null));
+    setPreco(service?.priceCents != null ? maskMoney(String(service.priceCents)) : '');
     setAtivo(service?.active ?? true);
     setSaving(false);
     setError(null);
@@ -105,10 +106,10 @@ export default function ServicoModal({ visible, onClose, onSave, onDelete, servi
       />
       <View style={sheetStyles.row}>
         <View style={sheetStyles.col}>
-          <FormField id="servico-duracao" label="Duração (min)" placeholder="50" value={duracao} onChangeText={setDuracao} keyboardType="number-pad" maxLength={3} />
+          <FormField id="servico-duracao" label="Duração (min)" placeholder="50" value={duracao} onChangeText={(t) => setDuracao(maskInteger(t))} keyboardType="number-pad" maxLength={3} />
         </View>
         <View style={sheetStyles.col}>
-          <FormField id="servico-preco" label="Preço (R$)" placeholder="150" value={preco} onChangeText={setPreco} keyboardType="decimal-pad" maxLength={10} />
+          <FormField id="servico-preco" label="Preço (R$)" placeholder="150,00" value={preco} onChangeText={(t) => setPreco(maskMoney(t))} keyboardType="number-pad" maxLength={10} />
         </View>
       </View>
       <View style={styles.switchRow}>

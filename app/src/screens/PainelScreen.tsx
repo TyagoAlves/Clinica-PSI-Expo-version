@@ -16,6 +16,7 @@ import { useAppNav } from '../navigation/AppNav';
 import { useCatalogs, useLocalList } from '../hooks/useClinicData';
 import { initials, payloadToFields } from '../services/patientForm';
 import { addMinutes, todayIso } from '../services/format';
+import { maskPhone } from '../services/masks';
 
 function formatTime(iso: string) {
   const d = new Date(iso);
@@ -163,7 +164,7 @@ export default function PainelScreen() {
               <View style={styles.patientInfo}>
                 <Text style={styles.patientName}>{p.name}</Text>
                 <Text style={styles.patientNotes} numberOfLines={1}>
-                  {[p.phone, p.service, p.status].filter(Boolean).join(' · ')}
+                  {[p.phone ? maskPhone(p.phone) : null, p.service, p.status].filter(Boolean).join(' · ')}
                 </Text>
               </View>
               {p.dirty ? (

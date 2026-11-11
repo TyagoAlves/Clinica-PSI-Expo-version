@@ -5,8 +5,8 @@ import FormField from './FormField';
 import SheetModal, { sheetStyles } from './SheetModal';
 import { View } from 'react-native';
 import type { ApiClinic, NewClinicInput } from '../services/apiTypes';
+import { isValidCpfCnpj, isValidPhone, maskAcronym, maskCpfCnpj, maskEmail, maskName, maskPhone } from '../services/masks';
 
-const CNPJ_REGEX = /^(\d{2}\.?\d{3}\.?\d{3}\/?\d{4}-?\d{2}|\d{11}|\d{14})$/;
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
 type Props = {
@@ -20,7 +20,14 @@ export default function ClinicaModal({ visible, onClose, clinic, onSave }: Props
   const [f, setF] = useState({ name: '', unit: '', technicalResponsible: '', cnpj: '', phone: '', email: '', address: '', acronym: '' });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const set = (k: keyof typeof f) => (v: string) => setF((p) => ({ ...p, [k]: k === 'acronym' ? v.toUpperCase() : v }));
+  const MASKS: Partial<Record<keyof typeof f, (v: string) => string>> = {
+    acronym: maskAcronym,
+    cnpj: maskCpfCnpj,
+    phone: maskPhone,
+    email: maskEmail,
+    technicalResponsible: maskName,
+  };
+  const set = (k: keyof typeof f) => (v: string) => setF((p) => ({ ...p, [k]: MASKS[k] ? MASKS[k]!(v) : v }));
 
   useEffect(() => {
     if (!visible || !clinic) return;
@@ -28,8 +35,8 @@ export default function ClinicaModal({ visible, onClose, clinic, onSave }: Props
       name: clinic.name,
       unit: clinic.unit ?? '',
       technicalResponsible: clinic.technicalResponsible ?? '',
-      cnpj: clinic.cnpj ?? '',
-      phone: clinic.phone ?? '',
+      cnpj: maskCpfCnpj(clinic.cnpj ?? ''),
+      phone: maskPhone(clinic.phone ?? ''),
       email: clinic.email ?? '',
       address: clinic.address ?? '',
       acronym: clinic.acronym ?? '',
@@ -40,7 +47,8 @@ export default function ClinicaModal({ visible, onClose, clinic, onSave }: Props
 
   const salvar = async () => {
     if (!f.name.trim()) return setError('Informe o nome da clínica.');
-    if (f.cnpj.trim() && !CNPJ_REGEX.test(f.cnpj.trim())) return setError('CNPJ no formato 00.000.000/0001-90.');
+    if (f.cnpj.trim() && !isValidCpfCnpj(f.cnpj)) return setError('CNPJ ou CPF inválido (confira os números).');
+    if (f.phone.trim() && !isValidPhone(f.phone)) return setError('Telefone incompleto. Use DDD + número.');
     if (f.email.trim() && !EMAIL_REGEX.test(f.email.trim())) return setError('Informe um e-mail válido.');
     setSaving(true);
     setError(null);
@@ -89,7 +97,7 @@ export default function ClinicaModal({ visible, onClose, clinic, onSave }: Props
           <FormField id="cfg-cnpj" label="CNPJ / documento" value={f.cnpj} onChangeText={set('cnpj')} maxLength={18} />
         </View>
         <View style={sheetStyles.col}>
-          <FormField id="cfg-tel" label="Telefone" value={f.phone} onChangeText={set('phone')} keyboardType="phone-pad" maxLength={20} />
+          <FormField id="cfg-tel" label="Telefone" value={f.phone} onChangeText={set('phone')} keyboardType="phone-pad" placeholder="61 3000-0000" maxLength={20} />
         </View>
       </View>
       <FormField id="cfg-email" label="E-mail da clínica" value={f.email} onChangeText={set('email')} keyboardType="email-address" autoCapitalize="none" maxLength={80} />
