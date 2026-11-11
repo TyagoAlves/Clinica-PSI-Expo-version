@@ -7,11 +7,7 @@ import { colors } from '../theme';
 export default function AppScreen({ children }: { children: ReactNode }) {
   return (
     <SafeAreaView style={styles.safeArea}>
-      <StatusBar
-        translucent
-        barStyle="dark-content"
-        backgroundColor="transparent"
-      />
+      <StatusBar barStyle="dark-content" />
       <ScrollView
         contentContainerStyle={styles.scroll}
         keyboardShouldPersistTaps="handled"

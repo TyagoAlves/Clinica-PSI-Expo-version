@@ -5,6 +5,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  type ScrollViewInstance,
   StatusBar,
   StyleSheet,
   Text,
@@ -17,18 +18,14 @@ const ScrollContext = createContext<((opts?: { animated?: boolean }) => void) | 
 export const useAuthScroll = () => useContext(ScrollContext);
 
 export default function AuthScreen({ children }: { children: ReactNode }) {
-  const scrollRef = useRef<ScrollView>(null);
+  const scrollRef = useRef<ScrollViewInstance>(null);
   const scrollToEnd = useCallback((opts?: { animated?: boolean }) => {
     scrollRef.current?.scrollToEnd({ animated: true, ...opts });
   }, []);
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <StatusBar
-        translucent
-        barStyle="dark-content"
-        backgroundColor="transparent"
-      />
+      <StatusBar barStyle="dark-content" />
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.keyboardWrap}
