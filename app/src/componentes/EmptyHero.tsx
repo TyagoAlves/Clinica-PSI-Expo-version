@@ -1,25 +1,28 @@
 // src/componentes/EmptyHero.tsx
+import type { ReactNode } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { colors } from '../theme';
 
-export default function EmptyHero({ onPress }: { onPress: () => void }) {
+type Props = {
+  title?: string;
+  subtitle?: string;
+  buttonLabel?: string;
+  onPress?: () => void;
+};
+
+export default function EmptyHero({
+  title = 'Crie seu primeiro paciente para começar',
+  subtitle = 'Cadastre o primeiro paciente para acompanhar sessões, evoluções e termos LGPD em um só lugar.',
+  buttonLabel = '+ Novo paciente',
+  onPress,
+}: Props) {
   return (
     <View style={styles.card}>
-      <View style={styles.circle}>
-        <Text style={styles.plus}>+</Text>
-      </View>
-      <Text style={styles.title}>Crie seu primeiro paciente para começar</Text>
-      <Text style={styles.subtitle}>
-        Cadastre o primeiro paciente para acompanhar sessões, evoluções e termos LGPD em um só lugar.
-      </Text>
-      <TouchableOpacity
-        style={styles.button}
-        activeOpacity={0.85}
-        onPress={onPress}
-        accessibilityRole="button"
-        accessibilityLabel="Novo paciente"
-      >
-        <Text style={styles.buttonText}>+ Novo paciente</Text>
+      <View style={styles.circle}><Text style={styles.plus}>+</Text></View>
+      <Text style={styles.title}>{title}</Text>
+      <Text style={styles.subtitle}>{subtitle}</Text>
+      <TouchableOpacity style={styles.button} onPress={onPress} accessibilityRole="button" accessibilityLabel={buttonLabel}>
+        <Text style={styles.buttonText}>{buttonLabel}</Text>
       </TouchableOpacity>
     </View>
   );
@@ -29,42 +32,26 @@ const styles = StyleSheet.create({
   card: {
     backgroundColor: colors.surface,
     borderRadius: 16,
-    alignItems: 'center',
     paddingVertical: 28,
     paddingHorizontal: 16,
+    alignItems: 'center',
+    gap: 12,
     marginTop: 12,
   },
   circle: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
-    backgroundColor: 'rgba(79, 70, 229, 0.10)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 14,
+    width: 88, height: 88, borderRadius: 44,
+    backgroundColor: 'rgba(79, 70, 229, 0.16)',
+    alignItems: 'center', justifyContent: 'center',
   },
-  plus: { fontSize: 30, color: colors.primary, fontWeight: '700' },
-  title: {
-    fontSize: 18,
-    fontWeight: '800',
-    color: colors.text,
-    textAlign: 'center',
-  },
-  subtitle: {
-    fontSize: 13,
-    color: colors.textMuted,
-    lineHeight: 19,
-    textAlign: 'center',
-    marginTop: 8,
-    marginBottom: 16,
-  },
+  plus: { fontSize: 32, fontWeight: '400', color: '#4F46E5', marginTop: 2 },
+  title: { fontSize: 19, fontWeight: '800', color: colors.text, textAlign: 'center', paddingHorizontal: 12 },
+  subtitle: { fontSize: 13, color: colors.textMuted, textAlign: 'center', lineHeight: 18, paddingHorizontal: 24 },
   button: {
+    height: 44, borderRadius: 8,
+    paddingHorizontal: 20,
     backgroundColor: colors.primary,
-    borderRadius: 8,
-    paddingHorizontal: 18,
-    height: 44,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: 'center', justifyContent: 'center',
+    marginTop: 4,
   },
-  buttonText: { color: '#FFFFFF', fontSize: 15, fontWeight: '700' },
+  buttonText: { fontSize: 14, fontWeight: '700', color: '#FFFFFF' },
 });

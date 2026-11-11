@@ -43,7 +43,7 @@ export default function AuthScreen({ children }: { children: ReactNode }) {
             <BrandHeader />
             {children}
             <Text style={styles.footer}>
-              O sistema guarda tudo apenas local. Nada é enviado para servidores.
+              Os dados ficam neste aparelho e são sincronizados com segurança com o servidor da clínica.
             </Text>
           </ScrollView>
         </ScrollContext.Provider>

@@ -1,39 +1,53 @@
 // src/componentes/DatabaseDebugModal.tsx
-import React, { useState, useEffect } from 'react';
+// Painel técnico (dev/suporte): sessão, conexão com a API, sincronização e dados no aparelho.
+import React, { useState, useEffect, useCallback } from 'react';
 import { Modal, View, Text, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
 import { useDatabase } from '../database/DatabaseProvider';
+import type { LocalPatient } from '../database/repositories/types';
+import { useAuth } from '../auth/AuthProvider';
+import { useSync } from '../sync/SyncProvider';
 import { colors } from '../theme';
+import { API_BASE_URL } from '../config/api';
+import { api } from '../services/api';
 
-export default function DatabaseDebugModal({
-  visible,
-  onClose,
-}: {
-  visible: boolean;
-  onClose: () => void;
-}) {
-  const { userRepo, clinicRepo, patientRepo } = useDatabase();
-  const [users, setUsers] = useState<any[]>([]);
-  const [clinics, setClinics] = useState<any[]>([]);
-  const [patients, setPatients] = useState<any[]>([]);
+type ApiStatus =
+  | { state: 'idle' | 'checking' }
+  | { state: 'ok'; detail: string }
+  | { state: 'error'; detail: string };
+
+const SYNC_LABEL = { idle: 'Em dia', syncing: 'Sincronizando…', offline: 'Sem conexão', error: 'Erro' } as const;
+
+export default function DatabaseDebugModal({ visible, onClose }: { visible: boolean; onClose: () => void }) {
+  const { patientRepo } = useDatabase();
+  const { user, clinic } = useAuth();
+  const sync = useSync();
+  const [patients, setPatients] = useState<LocalPatient[]>([]);
+  const [apiStatus, setApiStatus] = useState<ApiStatus>({ state: 'idle' });
+
+  const checkApi = useCallback(async () => {
+    setApiStatus({ state: 'checking' });
+    try {
+      const h = await api.health();
+      setApiStatus({ state: 'ok', detail: `${h.service} online (uptime ${h.uptime}s)` });
+    } catch (e: any) {
+      setApiStatus({ state: 'error', detail: e?.message || 'Falha ao conectar.' });
+    }
+  }, []);
+
+  const loadData = useCallback(async () => {
+    try {
+      setPatients(clinic ? await patientRepo.list(clinic.id) : []);
+    } catch (e) {
+      console.warn('[debug] erro ao ler dados locais:', e);
+    }
+  }, [patientRepo, clinic]);
 
   useEffect(() => {
-    if (visible) {
-      loadData();
-    }
-  }, [visible]);
-
-  const loadData = async () => {
-    try {
-      const u = await userRepo.listAll();
-      const c = await clinicRepo.listAll();
-      const p = await patientRepo.listAll();
-      setUsers(u);
-      setClinics(c);
-      setPatients(p);
-    } catch (e) {
-      console.warn('Erro ao carregar dados SQLite:', e);
-    }
-  };
+    if (!visible) return;
+    loadData();
+    checkApi();
+    return patientRepo.subscribe(loadData);
+  }, [visible, loadData, checkApi, patientRepo]);
 
   return (
     <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
@@ -41,78 +55,83 @@ export default function DatabaseDebugModal({
         <View style={styles.sheet}>
           <View style={styles.header}>
             <View>
-              <Text style={styles.title}>Visualizador de Teste SQLite</Text>
-              <Text style={styles.subtitle}>Tabelas e registros reais persistidos</Text>
+              <Text style={styles.title}>Dados e sincronização</Text>
+              <Text style={styles.subtitle}>Diagnóstico do aparelho e da conexão</Text>
             </View>
-            <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
+            <TouchableOpacity onPress={onClose} style={styles.closeBtn} accessibilityLabel="Fechar">
               <Text style={styles.closeText}>×</Text>
             </TouchableOpacity>
           </View>
 
           <ScrollView style={styles.content}>
-            {/* Tabela de Usuários */}
+            {/* Sessão */}
             <View style={styles.section}>
-              <Text style={styles.sectionTitle}>
-                Tabela: users ({users.length} {users.length === 1 ? 'registro' : 'registros'})
-              </Text>
-              {users.length === 0 ? (
-                <Text style={styles.emptyText}>Nenhum usuário cadastrado ainda.</Text>
-              ) : (
-                users.map((u) => (
-                  <View key={u.id} style={styles.itemCard}>
-                    <Text style={styles.itemName}>
-                      #{u.id} - {u.name} ({u.role})
-                    </Text>
-                    <Text style={styles.itemDetail}>E-mail: {u.email}</Text>
-                    {u.crp ? <Text style={styles.itemDetail}>CRP: {u.crp}</Text> : null}
-                    <Text style={styles.itemDetail}>
-                      Clínica ID: {u.clinicId ?? 'Sem clínica'}
-                    </Text>
-                  </View>
-                ))
-              )}
+              <Text style={styles.sectionTitle}>Sessão</Text>
+              <View style={styles.itemCard}>
+                <Text style={styles.itemName}>{user?.name ?? '—'}</Text>
+                <Text style={styles.itemDetail}>{user?.email}</Text>
+                <Text style={styles.itemDetail}>
+                  Clínica: {clinic ? `${clinic.name}${clinic.unit ? ` · ${clinic.unit}` : ''}` : '—'}
+                </Text>
+              </View>
             </View>
 
-            {/* Tabela de Clínicas */}
+            {/* Conexão com a API */}
             <View style={styles.section}>
-              <Text style={styles.sectionTitle}>
-                Tabela: clinics ({clinics.length} {clinics.length === 1 ? 'registro' : 'registros'})
-              </Text>
-              {clinics.length === 0 ? (
-                <Text style={styles.emptyText}>Nenhuma clínica cadastrada.</Text>
-              ) : (
-                clinics.map((c) => (
-                  <View key={c.id} style={styles.itemCard}>
-                    <Text style={styles.itemName}>
-                      #{c.id} - {c.name}
-                    </Text>
-                    {c.cnpj ? <Text style={styles.itemDetail}>CNPJ: {c.cnpj}</Text> : null}
-                    {c.phone ? <Text style={styles.itemDetail}>Telefone: {c.phone}</Text> : null}
-                  </View>
-                ))
-              )}
+              <Text style={styles.sectionTitle}>Conexão com a API</Text>
+              <View style={styles.itemCard} testID="api-status">
+                <Text style={styles.itemDetail}>URL: {API_BASE_URL}</Text>
+                <Text
+                  style={[
+                    styles.itemName,
+                    apiStatus.state === 'ok' && styles.apiOk,
+                    apiStatus.state === 'error' && styles.apiError,
+                  ]}
+                >
+                  {apiStatus.state === 'ok'
+                    ? `✓ ${apiStatus.detail}`
+                    : apiStatus.state === 'error'
+                      ? `✗ ${apiStatus.detail}`
+                      : 'Verificando…'}
+                </Text>
+              </View>
+              <TouchableOpacity onPress={checkApi} accessibilityRole="button">
+                <Text style={styles.apiRetry}>Testar API novamente</Text>
+              </TouchableOpacity>
             </View>
 
-            {/* Tabela de Pacientes */}
+            {/* Sincronização */}
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Sincronização</Text>
+              <View style={styles.itemCard} testID="sync-status">
+                <Text style={[styles.itemName, sync.state === 'error' && styles.apiError]}>
+                  {SYNC_LABEL[sync.state]} · {sync.pending} pendente(s)
+                </Text>
+                <Text style={styles.itemDetail}>
+                  Última: {sync.lastSyncAt ? new Date(sync.lastSyncAt).toLocaleString('pt-BR') : 'nunca'}
+                </Text>
+                {sync.lastError ? <Text style={[styles.itemDetail, styles.apiError]}>{sync.lastError}</Text> : null}
+              </View>
+            </View>
+
+            {/* Pacientes no aparelho */}
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>
-                Tabela: patients ({patients.length}{' '}
-                {patients.length === 1 ? 'registro' : 'registros'})
+                Pacientes no aparelho ({patients.length} {patients.length === 1 ? 'registro' : 'registros'})
               </Text>
               {patients.length === 0 ? (
-                <Text style={styles.emptyText}>Nenhum paciente cadastrado.</Text>
+                <Text style={styles.emptyText}>Nenhum paciente neste aparelho.</Text>
               ) : (
                 patients.map((p) => (
                   <View key={p.id} style={styles.itemCard}>
                     <Text style={styles.itemName}>
-                      #{p.id} - {p.name}
+                      {p.name} {p.dirty ? '· pendente' : '· enviado'}
                     </Text>
-                    {p.birthDate ? (
-                      <Text style={styles.itemDetail}>Nascimento: {p.birthDate}</Text>
-                    ) : null}
-                    {p.notes ? (
-                      <Text style={styles.itemDetail}>Observações: {p.notes}</Text>
-                    ) : null}
+                    <Text style={styles.itemDetail}>ID: {p.id}</Text>
+                    <Text style={styles.itemDetail}>
+                      {[p.phone, p.service, p.status].filter(Boolean).join(' · ')}
+                    </Text>
+                    <Text style={styles.itemDetail}>Editado: {new Date(p.updatedAt).toLocaleString('pt-BR')}</Text>
                   </View>
                 ))
               )}
@@ -120,8 +139,15 @@ export default function DatabaseDebugModal({
           </ScrollView>
 
           <View style={styles.footer}>
-            <TouchableOpacity style={styles.refreshBtn} onPress={loadData}>
-              <Text style={styles.refreshBtnText}>Atualizar Dados</Text>
+            <TouchableOpacity
+              style={[styles.refreshBtn, sync.state === 'syncing' && styles.refreshBtnBusy]}
+              onPress={() => sync.syncNow().then(loadData)}
+              disabled={sync.state === 'syncing'}
+              accessibilityRole="button"
+            >
+              <Text style={styles.refreshBtnText}>
+                {sync.state === 'syncing' ? 'Sincronizando…' : 'Sincronizar agora'}
+              </Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -169,6 +195,9 @@ const styles = StyleSheet.create({
   },
   itemName: { fontSize: 13, fontWeight: '600', color: colors.text },
   itemDetail: { fontSize: 11, color: colors.textMuted, marginTop: 2 },
+  apiOk: { color: '#15803D', marginTop: 4 },
+  apiError: { color: colors.error, marginTop: 4 },
+  apiRetry: { fontSize: 12, fontWeight: '600', color: colors.primary, marginTop: 4 },
   footer: { paddingHorizontal: 18, paddingTop: 10 },
   refreshBtn: {
     backgroundColor: colors.primary,
@@ -176,5 +205,6 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     alignItems: 'center',
   },
+  refreshBtnBusy: { opacity: 0.6 },
   refreshBtnText: { color: '#FFFFFF', fontWeight: '700', fontSize: 13 },
 });

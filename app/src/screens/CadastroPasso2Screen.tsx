@@ -8,8 +8,7 @@ import FormField from '../componentes/FormField';
 import PrimaryButton from '../componentes/PrimaryButton';
 import Stepper from '../componentes/Stepper';
 import TextButton from '../componentes/TextButton';
-import { useDatabase } from '../database/DatabaseProvider';
-import { ClinicService } from '../services/clinic';
+import { useAuth } from '../auth/AuthProvider';
 
 const CNPJ_REGEX = /^(\d{2}\.?\d{3}\.?\d{3}\/?\d{4}-?\d{2}|\d{11}|\d{14})$/;
 
@@ -20,7 +19,7 @@ type Props = {
 };
 
 export default function CadastroPasso2Screen({ onVoltar, onConcluir, navigation }: Props = {}) {
-  const { clinicRepo, userRepo } = useDatabase();
+  const { createClinic, logout } = useAuth();
   const scrollToEnd = useAuthScroll();
   const [nome, setNome] = useState('');
   const [unidade, setUnidade] = useState('');
@@ -37,11 +36,19 @@ export default function CadastroPasso2Screen({ onVoltar, onConcluir, navigation 
     if (error) setError(null);
   };
 
+  // A conta já existe no servidor; "Voltar" sai da sessão e o passo 2 é retomado no próximo login.
   const handleVoltar = useCallback(() => {
     if (onVoltar) return onVoltar();
     if (navigation?.goBack) return navigation.goBack();
-    Alert.alert('Voltar', 'Sem navegação, este fluxo termina aqui.', [{ text: 'Entendi' }]);
-  }, [onVoltar, navigation]);
+    Alert.alert(
+      'Concluir depois?',
+      'Sua conta já foi criada. Para cadastrar a clínica depois, é só entrar com seu e-mail e senha.',
+      [
+        { text: 'Continuar aqui', style: 'cancel' },
+        { text: 'Sair', onPress: () => logout() },
+      ]
+    );
+  }, [onVoltar, navigation, logout]);
 
   const handleConcluir = useCallback(async () => {
     if (!nome.trim()) {
@@ -57,28 +64,23 @@ export default function CadastroPasso2Screen({ onVoltar, onConcluir, navigation 
     Keyboard.dismiss();
 
     try {
-      const clinicService = new ClinicService(clinicRepo, userRepo);
-      const res = await clinicService.createClinic({
+      // Sucesso: a sessão ganha a clínica e o App abre o Painel.
+      await createClinic({
         name: nome.trim(),
-        cnpj: cnpj.trim() || undefined,
-        address: endereco.trim() || undefined,
-        phone: telefone.trim() || undefined,
+        unit: unidade.trim() || null,
+        technicalResponsible: responsavel.trim() || null,
+        cnpj: cnpj.trim() || null,
+        phone: telefone.trim() || null,
+        email: email.trim() || null,
+        address: endereco.trim() || null,
+        acronym: sigla.trim() || null,
       });
-
-      setLoading(false);
-      if (!res.success) {
-        setError(res.error || 'Erro ao registrar clínica no SQLite.');
-        return;
-      }
-
-      if (onConcluir) return onConcluir();
-      if (navigation?.replace) return navigation.replace('Painel');
-      Alert.alert('Clínica Registrada no SQLite', 'Dados persistidos na tabela clinics.');
+      onConcluir?.();
     } catch (err: any) {
       setLoading(false);
-      setError(err?.message || 'Erro ao gravar clínica no banco de dados.');
+      setError(err?.message || 'Não foi possível cadastrar a clínica. Tente de novo.');
     }
-  }, [nome, cnpj, endereco, telefone, onConcluir, navigation, clinicRepo, userRepo]);
+  }, [nome, unidade, responsavel, cnpj, telefone, email, endereco, sigla, onConcluir, createClinic]);
 
   return (
     <AuthScreen>

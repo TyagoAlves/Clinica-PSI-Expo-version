@@ -1,18 +1,28 @@
 // src/database/DatabaseProvider.tsx
-import React, { createContext, useContext, useEffect, useState, useMemo } from 'react';
-import { View, Text, ActivityIndicator, StyleSheet, Platform } from 'react-native';
-import { UserRepo } from './repositories/UserRepo';
-import { ClinicRepo } from './repositories/ClinicRepo';
-import { PatientRepo } from './repositories/PatientRepo';
-import type { IUserRepository, IClinicRepository, IPatientRepository } from './repositories/types';
+// Abre o SQLite local do aparelho e expõe os repositórios.
+import React, { createContext, useContext, useEffect, useState } from 'react';
+import { View, Text, ActivityIndicator, StyleSheet } from 'react-native';
+import * as SQLite from 'expo-sqlite';
+import { SyncTableRepo, PATIENTS_TABLE, SERVICES_TABLE, EVOLUTIONS_TABLE, APPOINTMENTS_TABLE } from './repositories/SyncTableRepo';
+import { SyncStateRepo } from './repositories/SyncStateRepo';
+import type {
+  IAppointmentRepository,
+  IEvolutionRepository,
+  IPatientRepository,
+  IServiceRepository,
+  ISyncStateRepository,
+} from './repositories/types';
 import { migrateIfNeeded } from './migrate';
+import { colors } from '../theme';
 
 interface DatabaseContextValue {
-  isReady: boolean;
-  userRepo: IUserRepository;
-  clinicRepo: IClinicRepository;
   patientRepo: IPatientRepository;
-  rawDb?: any;
+  serviceRepo: IServiceRepository;
+  evolutionRepo: IEvolutionRepository;
+  appointmentRepo: IAppointmentRepository;
+  syncStateRepo: ISyncStateRepository;
+  /** Apaga todos os dados locais (logout). */
+  wipe(): Promise<void>;
 }
 
 const DatabaseContext = createContext<DatabaseContextValue | null>(null);
@@ -25,283 +35,77 @@ export const useDatabase = () => {
   return ctx;
 };
 
-// Implementação SQLite em memória/web storage para fallback web caso WASM/OPFS não esteja disponível
-class WebStorageDatabaseAdapter {
-  private users: any[] = [];
-  private clinics: any[] = [];
-  private patients: any[] = [];
-  private userVersion = 0;
-
-  constructor() {
-    this.loadFromStorage();
-  }
-
-  private loadFromStorage() {
-    try {
-      if (typeof window !== 'undefined' && window.localStorage) {
-        const u = localStorage.getItem('@clinica_psi_users');
-        const c = localStorage.getItem('@clinica_psi_clinics');
-        const p = localStorage.getItem('@clinica_psi_patients');
-        const v = localStorage.getItem('@clinica_psi_user_version');
-        if (u) this.users = JSON.parse(u);
-        if (c) this.clinics = JSON.parse(c);
-        if (p) this.patients = JSON.parse(p);
-        if (v) this.userVersion = Number(v);
-      }
-    } catch (e) {}
-  }
-
-  private persist() {
-    try {
-      if (typeof window !== 'undefined' && window.localStorage) {
-        localStorage.setItem('@clinica_psi_users', JSON.stringify(this.users));
-        localStorage.setItem('@clinica_psi_clinics', JSON.stringify(this.clinics));
-        localStorage.setItem('@clinica_psi_patients', JSON.stringify(this.patients));
-        localStorage.setItem('@clinica_psi_user_version', String(this.userVersion));
-      }
-    } catch (e) {}
-  }
-
-  async execAsync(sql: string) {
-    if (sql.includes('PRAGMA user_version')) {
-      const match = sql.match(/user_version\s*=\s*(\d+)/i);
-      if (match) {
-        this.userVersion = parseInt(match[1], 10);
-        this.persist();
-      }
-    }
-    return Promise.resolve();
-  }
-
-  async runAsync(sql: string, ...params: any[]) {
-    const flatParams = Array.isArray(params[0]) ? params[0] : params;
-    const lower = sql.trim().toLowerCase();
-
-    if (lower.startsWith('pragma user_version')) {
-      this.userVersion = Number(flatParams[0] || 1);
-      this.persist();
-      return { lastInsertRowId: 1, changes: 1 };
-    }
-
-    if (lower.startsWith('insert into users')) {
-      const id = this.users.length ? Math.max(...this.users.map((x) => x.id)) + 1 : 1;
-      const newUser = {
-        id,
-        name: flatParams[0],
-        email: flatParams[1],
-        password_hash: flatParams[2],
-        salt: flatParams[3],
-        crp: flatParams[4] || null,
-        role: flatParams[5] || 'psychologist',
-        clinic_id: flatParams[6] || null,
-        created_at: new Date().toISOString(),
-      };
-      this.users.push(newUser);
-      this.persist();
-      return { lastInsertRowId: id, changes: 1 };
-    }
-
-    if (lower.startsWith('insert into clinics')) {
-      const id = this.clinics.length ? Math.max(...this.clinics.map((x) => x.id)) + 1 : 1;
-      const newClinic = {
-        id,
-        name: flatParams[0],
-        cnpj: flatParams[1] || null,
-        address: flatParams[2] || null,
-        phone: flatParams[3] || null,
-        created_at: new Date().toISOString(),
-      };
-      this.clinics.push(newClinic);
-      this.persist();
-      return { lastInsertRowId: id, changes: 1 };
-    }
-
-    if (lower.startsWith('insert into patients')) {
-      const id = this.patients.length ? Math.max(...this.patients.map((x) => x.id)) + 1 : 1;
-      const newPatient = {
-        id,
-        clinic_id: flatParams[0],
-        name: flatParams[1],
-        birth_date: flatParams[2] || null,
-        notes: flatParams[3] || null,
-        created_at: new Date().toISOString(),
-      };
-      this.patients.push(newPatient);
-      this.persist();
-      return { lastInsertRowId: id, changes: 1 };
-    }
-
-    if (lower.startsWith('update users')) {
-      // 'UPDATE users SET clinic_id = ? WHERE id = ?'
-      const clinicId = flatParams[0];
-      const id = flatParams[1];
-      const user = this.users.find((u) => u.id === Number(id));
-      if (user) user.clinic_id = clinicId;
-      this.persist();
-      return { lastInsertRowId: id, changes: 1 };
-    }
-
-    if (lower.startsWith('delete from patients')) {
-      const id = flatParams[0];
-      this.patients = this.patients.filter((p) => p.id !== Number(id));
-      this.persist();
-      return { lastInsertRowId: 0, changes: 1 };
-    }
-
-    return { lastInsertRowId: 0, changes: 0 };
-  }
-
-  async getFirstAsync(sql: string, params: any[] = []): Promise<any> {
-    const flatParams = Array.isArray(params[0]) ? params[0] : params;
-    const lower = sql.trim().toLowerCase();
-
-    if (lower.includes('pragma user_version')) {
-      return { user_version: this.userVersion };
-    }
-
-    if (lower.includes('from users where email =')) {
-      const email = flatParams[0];
-      return this.users.find((u) => u.email?.toLowerCase() === String(email).toLowerCase()) || null;
-    }
-
-    if (lower.includes('from users where id =')) {
-      const id = flatParams[0];
-      return this.users.find((u) => u.id === Number(id)) || null;
-    }
-
-    if (lower.includes('from clinics where id =')) {
-      const id = flatParams[0];
-      return this.clinics.find((c) => c.id === Number(id)) || null;
-    }
-
-    if (lower.includes('from patients where id =')) {
-      const id = flatParams[0];
-      return this.patients.find((p) => p.id === Number(id)) || null;
-    }
-
-    return null;
-  }
-
-  async getAllAsync(sql: string, params: any[] = []): Promise<any[]> {
-    const flatParams = Array.isArray(params[0]) ? params[0] : params;
-    const lower = sql.trim().toLowerCase();
-
-    if (lower.includes('from users')) {
-      return [...this.users];
-    }
-    if (lower.includes('from clinics')) {
-      return [...this.clinics];
-    }
-    if (lower.includes('from patients where clinic_id =')) {
-      const clinicId = flatParams[0];
-      return this.patients.filter((p) => p.clinic_id === Number(clinicId));
-    }
-    if (lower.includes('from patients')) {
-      return [...this.patients];
-    }
-
-    return [];
-  }
-}
-
 export const DatabaseProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [isReady, setIsReady] = useState(false);
-  const [dbInstance, setDbInstance] = useState<any>(null);
+  const [value, setValue] = useState<DatabaseContextValue | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     let active = true;
-
-    async function initDB() {
+    (async () => {
       try {
-        let db: any;
-
-        // Se for ambiente nativo (Android/iOS) ou Expo SQLite completo
-        if (Platform.OS !== 'web') {
-          const SQLite = require('expo-sqlite');
-          db = await SQLite.openDatabaseAsync('clinicapsi.db');
-          await migrateIfNeeded(db);
-        } else {
-          // No ambiente web, tenta abrir expo-sqlite se o backend WASM estiver ativo,
-          // caso contrário ativa o WebStorageDatabaseAdapter transparente com persistência
-          try {
-            const SQLite = require('expo-sqlite');
-            if (SQLite.openDatabaseAsync) {
-              db = await SQLite.openDatabaseAsync('clinicapsi.db');
-              await migrateIfNeeded(db);
-            } else {
-              db = new WebStorageDatabaseAdapter();
-              await migrateIfNeeded(db);
-            }
-          } catch (webErr) {
-            db = new WebStorageDatabaseAdapter();
-            await migrateIfNeeded(db);
-          }
-        }
-
+        const db = await SQLite.openDatabaseAsync('clinicapsi.db');
+        await migrateIfNeeded(db);
+        const patientRepo: IPatientRepository = new SyncTableRepo(db, PATIENTS_TABLE);
+        const serviceRepo: IServiceRepository = new SyncTableRepo(db, SERVICES_TABLE);
+        const evolutionRepo: IEvolutionRepository = new SyncTableRepo(db, EVOLUTIONS_TABLE);
+        const appointmentRepo: IAppointmentRepository = new SyncTableRepo(db, APPOINTMENTS_TABLE);
+        const syncStateRepo = new SyncStateRepo(db);
         if (active) {
-          setDbInstance(db);
-          setIsReady(true);
+          setValue({
+            patientRepo,
+            serviceRepo,
+            evolutionRepo,
+            appointmentRepo,
+            syncStateRepo,
+            wipe: async () => {
+              await patientRepo.clearAll();
+              await serviceRepo.clearAll();
+              await evolutionRepo.clearAll();
+              await appointmentRepo.clearAll();
+              await syncStateRepo.clearAll();
+            },
+          });
         }
-      } catch (err) {
-        console.warn('Erro ao inicializar SQLite nativo, ativando fallback resiliente:', err);
-        const fallbackDb = new WebStorageDatabaseAdapter();
-        await migrateIfNeeded(fallbackDb);
-        if (active) {
-          setDbInstance(fallbackDb);
-          setIsReady(true);
-        }
+      } catch (err: any) {
+        console.warn('[db] falha ao abrir o banco local:', err);
+        // Obs.: no navegador o expo-sqlite precisa de configuração extra (WASM); o alvo do app é Android/iOS.
+        if (active) setError(err?.message || 'Não foi possível abrir o banco local.');
       }
-    }
-
-    initDB();
-
+    })();
     return () => {
       active = false;
     };
   }, []);
 
-  const repos = useMemo(() => {
-    const db = dbInstance || new WebStorageDatabaseAdapter();
-    return {
-      userRepo: new UserRepo(db),
-      clinicRepo: new ClinicRepo(db),
-      patientRepo: new PatientRepo(db),
-    };
-  }, [dbInstance]);
-
-  if (!isReady) {
+  if (error) {
     return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#4F46E5" />
-        <Text style={styles.loadingText}>Conectando ao banco de dados...</Text>
+      <View style={styles.center}>
+        <Text style={styles.errorTitle}>Erro no armazenamento do aparelho</Text>
+        <Text style={styles.text}>{error}</Text>
       </View>
     );
   }
 
-  return (
-    <DatabaseContext.Provider
-      value={{
-        isReady,
-        ...repos,
-        rawDb: dbInstance,
-      }}
-    >
-      {children}
-    </DatabaseContext.Provider>
-  );
+  if (!value) {
+    return (
+      <View style={styles.center}>
+        <ActivityIndicator size="large" color={colors.primary} />
+        <Text style={styles.text}>Preparando dados do aparelho...</Text>
+      </View>
+    );
+  }
+
+  return <DatabaseContext.Provider value={value}>{children}</DatabaseContext.Provider>;
 };
 
 const styles = StyleSheet.create({
-  loadingContainer: {
+  center: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#F1F3F8',
+    backgroundColor: colors.bg,
+    padding: 24,
   },
-  loadingText: {
-    marginTop: 12,
-    fontSize: 14,
-    color: '#64748B',
-    fontWeight: '500',
-  },
+  errorTitle: { fontSize: 16, fontWeight: '700', color: colors.error, marginBottom: 8 },
+  text: { marginTop: 12, fontSize: 14, color: colors.textMuted, fontWeight: '500', textAlign: 'center' },
 });

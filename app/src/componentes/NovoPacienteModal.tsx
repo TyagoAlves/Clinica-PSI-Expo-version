@@ -1,5 +1,5 @@
 // src/componentes/NovoPacienteModal.tsx
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
   Modal,
   View,
@@ -17,11 +17,18 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors } from '../theme';
 import FormField from './FormField';
 
-// Catálogo para os dropdowns (sem backend nesta fase)
-const SERVICES = ['Psicoterapia', 'Avaliação', 'Acompanhamento'];
+// Catálogo para os dropdowns (serviços configuráveis entram com a tela "Serviços")
+const DEFAULT_SERVICES = ['Psicoterapia', 'Avaliação', 'Acompanhamento'];
 const SITUACOES = ['Em tratamento', 'Pausado', 'Alta'];
-const PROFESSIONALS = ['Ana Souza', 'Marcos Lima', 'Clínica Psi'];
-const DEFAULT_DATE = '08/11/2026';
+const DEFAULT_PROFESSIONALS = ['Clínica Psi'];
+const DATE_BR = /^(0[1-9]|[12]\d|3[01])\/(0[1-9]|1[0-2])\/\d{4}$/;
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+
+/** Hoje em DD/MM/AAAA. */
+function hojeBr() {
+  const d = new Date();
+  return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
+}
 
 const FieldRow = ({ children }: { children: React.ReactNode }) => (
   <View style={styles.fieldRow}>{children}</View>
@@ -75,10 +82,21 @@ export type NovoPacientePayload = {
 type Props = {
   visible: boolean;
   onClose: () => void;
-  onSaved?: (payload: NovoPacientePayload) => void;
+  /** Grava o paciente; se lançar erro, a mensagem aparece no modal e nada se perde. */
+  onSaved?: (payload: NovoPacientePayload) => void | Promise<void>;
+  /** Profissionais selecionáveis (membros da clínica). */
+  professionals?: string[];
+  /** Serviços do catálogo da clínica. */
+  services?: string[];
+  /** Preenche o formulário para edição (título e botão mudam). */
+  initial?: NovoPacientePayload | null;
 };
 
-export default function NovoPacienteModal({ visible, onClose, onSaved }: Props) {
+export default function NovoPacienteModal({ visible, onClose, onSaved, professionals, services, initial }: Props) {
+  const editing = !!initial;
+  const PROFESSIONALS = professionals && professionals.length > 0 ? professionals : DEFAULT_PROFESSIONALS;
+  const SERVICES = services && services.length > 0 ? services : DEFAULT_SERVICES;
+  const DEFAULT_DATE = hojeBr();
   const insets = useSafeAreaInsets();
   const [nome, setNome] = useState('');
   const [telefone, setTelefone] = useState('');
@@ -110,14 +128,34 @@ export default function NovoPacienteModal({ visible, onClose, onSaved }: Props) 
     setDescricao('');
     setError(null);
     setSaving(false);
-  }, []);
+  }, [DEFAULT_DATE, PROFESSIONALS, SERVICES]);
+
+  // Edição: carrega os dados atuais quando o modal abre.
+  useEffect(() => {
+    if (!visible || !initial) return;
+    setNome(initial.nome);
+    setTelefone(initial.telefone);
+    setEmail(initial.email);
+    setNascimento(initial.nascimento);
+    setDocumento(initial.documento);
+    setServico(initial.servico || SERVICES[0]);
+    setInicio(initial.inicio);
+    setSituacao(initial.situacao || SITUACOES[0]);
+    setProfissional(initial.profissional || PROFESSIONALS[0]);
+    setEndereco(initial.endereco);
+    setResponsavel(initial.responsavel);
+    setDescricao(initial.descricao);
+    setError(null);
+    setSaving(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [visible, initial]);
 
   const close = useCallback(() => {
     reset();
     onClose();
   }, [onClose, reset]);
 
-  const handleSubmit = useCallback(() => {
+  const handleSubmit = useCallback(async () => {
     if (!nome.trim()) {
       setError('Informe o nome completo.');
       return;
@@ -126,8 +164,20 @@ export default function NovoPacienteModal({ visible, onClose, onSaved }: Props) 
       setError('Informe um telefone de contato.');
       return;
     }
+    if (email.trim() && !EMAIL_REGEX.test(email.trim())) {
+      setError('Informe um e-mail válido.');
+      return;
+    }
+    if (nascimento.trim() && !DATE_BR.test(nascimento.trim())) {
+      setError('Nascimento no formato DD/MM/AAAA.');
+      return;
+    }
     if (!servico.trim()) {
       setError('Selecione o serviço.');
+      return;
+    }
+    if (inicio.trim() && !DATE_BR.test(inicio.trim())) {
+      setError('Início do tratamento no formato DD/MM/AAAA.');
       return;
     }
 
@@ -151,8 +201,13 @@ export default function NovoPacienteModal({ visible, onClose, onSaved }: Props) 
     };
 
     if (onSaved) {
-      onSaved(payload);
-      close();
+      try {
+        await onSaved(payload);
+        close();
+      } catch (e: any) {
+        setSaving(false);
+        setError(e?.message || 'Não foi possível salvar o paciente. Tente de novo.');
+      }
       return;
     }
 
@@ -177,6 +232,14 @@ export default function NovoPacienteModal({ visible, onClose, onSaved }: Props) 
     close,
   ]);
 
+  // Lista de profissionais mudou (ex.: login de outro usuário): garante seleção válida.
+  useEffect(() => {
+    // Em edição, mantém valores antigos mesmo que saiam do catálogo (ex.: serviço removido).
+    if (editing) return;
+    if (!PROFESSIONALS.includes(profissional)) setProfissional(PROFESSIONALS[0]);
+    if (!SERVICES.includes(servico)) setServico(SERVICES[0]);
+  }, [PROFESSIONALS, profissional, SERVICES, servico, editing]);
+
   return (
     <Modal
       visible={visible}
@@ -189,7 +252,7 @@ export default function NovoPacienteModal({ visible, onClose, onSaved }: Props) 
         <View style={styles.sheet}>
           {/* Header */}
           <View style={styles.header}>
-            <Text style={styles.title}>Novo paciente</Text>
+            <Text style={styles.title}>{editing ? 'Editar paciente' : 'Novo paciente'}</Text>
             <TouchableOpacity
               onPress={close}
               style={styles.close}
@@ -376,13 +439,13 @@ export default function NovoPacienteModal({ visible, onClose, onSaved }: Props) 
               activeOpacity={0.85}
               disabled={saving}
               accessibilityRole="button"
-              accessibilityLabel="Cadastrar paciente"
+              accessibilityLabel={editing ? 'Salvar alterações' : 'Cadastrar paciente'}
               accessibilityHint="Cadastra o paciente e fecha o formulário"
             >
               {saving ? (
                 <ActivityIndicator color="#FFFFFF" />
               ) : (
-                <Text style={styles.buttonPrimaryText}>Cadastrar paciente</Text>
+                <Text style={styles.buttonPrimaryText}>{editing ? 'Salvar alterações' : 'Cadastrar paciente'}</Text>
               )}
             </TouchableOpacity>
           </View>

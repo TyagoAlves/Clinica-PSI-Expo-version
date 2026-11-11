@@ -10,8 +10,7 @@ import PrimaryButton from '../componentes/PrimaryButton';
 import Stepper from '../componentes/Stepper';
 import InfoNote from '../componentes/InfoNote';
 import TextButton from '../componentes/TextButton';
-import { useDatabase } from '../database/DatabaseProvider';
-import { AuthService } from '../services/auth';
+import { useAuth } from '../auth/AuthProvider';
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 const CRP_REGEX = /^(CRP\s*)?\d{2}\s*\/\s*\d{3,6}$/i;
@@ -23,7 +22,7 @@ type Props = {
 };
 
 export default function CadastroPasso1Screen({ onVoltar, onContinuar, navigation }: Props = {}) {
-  const { userRepo } = useDatabase();
+  const { register } = useAuth();
   const scrollToEnd = useAuthScroll();
   const [nome, setNome] = useState('');
   const [email, setEmail] = useState('');
@@ -65,34 +64,20 @@ export default function CadastroPasso1Screen({ onVoltar, onContinuar, navigation
     setLoading(true);
 
     try {
-      const authService = new AuthService(userRepo);
-      const res = await authService.register({
+      // A conta é criada no servidor (precisa de internet). Em seguida o App abre o passo 2.
+      await register({
         name: nome.trim(),
         email: email.trim(),
         password: senha,
-        crp: crp.trim() || undefined,
+        crp: crp.trim() || null,
         role: funcao.toLowerCase().includes('admin') ? 'admin' : 'psychologist',
       });
-
-      if (!res.success && res.error?.includes('já cadastrado')) {
-        // Se já cadastrado, permite avançar no teste
-      } else if (!res.success) {
-        setError(res.error || 'Erro ao registrar no banco de dados.');
-        setLoading(false);
-        return;
-      }
-
-      setLoading(false);
-      if (onContinuar) {
-        onContinuar();
-      } else {
-        Alert.alert('Salvo no SQLite', 'Usuário persistido na tabela users com sucesso.');
-      }
+      onContinuar?.();
     } catch (err: any) {
       setLoading(false);
-      setError(err?.message || 'Erro ao salvar no banco SQLite.');
+      setError(err?.message || 'Não foi possível criar a conta. Tente de novo.');
     }
-  }, [nome, email, senha, confirmarSenha, crp, funcao, onContinuar, userRepo]);
+  }, [nome, email, senha, confirmarSenha, crp, funcao, onContinuar, register]);
 
   const handleVoltar = useCallback(() => {
     if (onVoltar) return onVoltar();

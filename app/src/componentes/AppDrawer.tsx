@@ -33,7 +33,7 @@ type Props = {
   visible: boolean;
   onClose: () => void;
   items?: DrawerItem[];
-  clinic?: { name: string; unit: string };
+  clinic?: { name: string; unit: string; acronym?: string };
   professional?: { initials: string; name: string; role: string };
   onLogout?: () => void;
 };
@@ -106,12 +106,14 @@ export default function AppDrawer({
         >
           {/* Marca */}
           <View style={styles.brandRow}>
-            <View style={styles.logo} accessibilityLabel="Clínica Psi">
-              <Text style={styles.logoText}>CP</Text>
+            <View style={styles.logo} accessibilityLabel={clinic.name}>
+              <Text style={styles.logoText}>{clinic.acronym || 'CP'}</Text>
             </View>
-            <View>
-              <Text style={styles.clinicName}>{clinic.name}</Text>
-              <Text style={styles.clinicUnit}>{clinic.unit}</Text>
+            <View style={{ flexShrink: 1 }}>
+              <Text style={styles.clinicName} numberOfLines={1}>
+                {clinic.name}
+              </Text>
+              {clinic.unit ? <Text style={styles.clinicUnit}>{clinic.unit}</Text> : null}
             </View>
           </View>
 
