@@ -6,7 +6,7 @@ const later = (iso: string, ms: number) => new Date(new Date(iso).getTime() + ms
 
 describe('POST /api/v1/sync', () => {
   it('push de paciente criado offline e pull por outro aparelho', async () => {
-    const { app } = makeApp();
+    const { app } = await makeApp();
     const { token } = await signUp(app);
     const p = patientChange();
 
@@ -30,7 +30,7 @@ describe('POST /api/v1/sync', () => {
   });
 
   it('conflito: a edição mais recente vence', async () => {
-    const { app } = makeApp();
+    const { app } = await makeApp();
     const { token } = await signUp(app);
     const p = patientChange();
     await request(app).post('/api/v1/sync').set(auth(token)).send({ changes: { patients: [p] } });
@@ -45,7 +45,7 @@ describe('POST /api/v1/sync', () => {
   });
 
   it('exclusão propaga como deletedAt', async () => {
-    const { app } = makeApp();
+    const { app } = await makeApp();
     const { token } = await signUp(app);
     const p = patientChange();
     const r1 = await request(app).post('/api/v1/sync').set(auth(token)).send({ changes: { patients: [p] } });
@@ -58,7 +58,7 @@ describe('POST /api/v1/sync', () => {
   });
 
   it('não permite sobrescrever paciente de outra clínica pelo ID', async () => {
-    const { app } = makeApp();
+    const { app } = await makeApp();
     const a = await signUp(app);
     const b = await signUp(app);
     const p = patientChange();
@@ -74,7 +74,7 @@ describe('POST /api/v1/sync', () => {
   });
 
   it('exige clínica cadastrada e valida payload', async () => {
-    const { app } = makeApp();
+    const { app } = await makeApp();
     const noClinic = await signUp(app, { clinic: false });
     const r = await request(app).post('/api/v1/sync').set(auth(noClinic.token)).send({});
     expect(r.status).toBe(409);

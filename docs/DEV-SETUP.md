@@ -77,8 +77,10 @@ Código: `src/services/api.ts` (cliente), `src/auth/AuthProvider.tsx` (sessão),
 ## API
 
 Contrato completo em `api/API.md`. Primeira vez: copie `.env.example` para `.env`, rode
-`npm run gen:key` e cole o valor em `DATA_ENCRYPTION_KEY`. Banco em `api/data/clinica.db`
-(`npm run db:reset` apaga). Arquitetura e backlog por papel: `BACKLOG-TIME.md`.
+`npm run gen:key` (cole em `DATA_ENCRYPTION_KEY`) e cole a **`DATABASE_URL`** do Supabase
+(painel → **Connect** → Connection string → URI → **Session pooler**; troque `[YOUR-PASSWORD]`).
+As tabelas são criadas sozinhas na primeira subida da API. Testes usam PGlite (não tocam no Supabase).
+O app é **online**: sem a API no ar ou sem internet, as telas mostram erro. Arquitetura e backlog por papel: `BACKLOG-TIME.md`.
 
 ## Validação (rodar após cada alteração)
 

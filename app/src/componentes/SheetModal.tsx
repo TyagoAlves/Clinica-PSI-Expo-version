@@ -66,12 +66,14 @@ export default function SheetModal({
 
           <ScrollView style={styles.body} contentContainerStyle={{ paddingBottom: 8 }} keyboardShouldPersistTaps="handled">
             {children}
-            {error ? (
-              <Text style={styles.error} accessibilityLiveRegion="polite">
-                {error}
-              </Text>
-            ) : null}
           </ScrollView>
+
+          {/* Erro fixo acima dos botões (visível sem rolar) */}
+          {error ? (
+            <Text style={[styles.error, { paddingHorizontal: 18 }]} accessibilityLiveRegion="polite">
+              {error}
+            </Text>
+          ) : null}
 
           <View style={styles.footer}>
             {onDelete ? (

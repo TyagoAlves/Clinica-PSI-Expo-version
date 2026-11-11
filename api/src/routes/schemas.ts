@@ -116,6 +116,7 @@ export const UpdateAppointmentSchema = AppointmentFieldsSchema.extend({ status: 
 export const AppointmentRangeSchema = z.object({
   from: z.string().regex(DATE_ISO, 'from no formato AAAA-MM-DD.').optional(),
   to: z.string().regex(DATE_ISO, 'to no formato AAAA-MM-DD.').optional(),
+  patientId: z.string().uuid('patientId inválido.').optional(),
   limit: z.coerce.number().int().min(1).max(500).default(200),
   offset: z.coerce.number().int().min(0).default(0),
 });

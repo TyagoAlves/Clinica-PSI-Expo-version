@@ -1,5 +1,5 @@
 // src/screens/PainelScreen.tsx
-// Painel: lê os dados do SQLite local (funciona offline) e mostra o estado da sincronização.
+// Painel: lê os dados da API (Supabase) e mostra o estado da conexão.
 import { useState, useMemo } from 'react';
 import { Alert, View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
 import { colors } from '../theme';
@@ -42,7 +42,7 @@ export default function PainelScreen() {
   const [busca, setBusca] = useState('');
 
   const handlePacienteSalvo = async (p: NovoPacientePayload) => {
-    // Grava no aparelho primeiro (funciona sem internet) e agenda o envio.
+    // Grava direto na API (precisa de internet).
     await patientRepo.create(clinic!.id, payloadToFields(p));
     sync.requestSync();
   };
@@ -70,15 +70,15 @@ export default function PainelScreen() {
 
   const statusSync =
     sync.state === 'syncing'
-      ? 'Sincronizando…'
+      ? 'Atualizando…'
       : sync.pending > 0
         ? `${sync.pending} pendente(s)${sync.state === 'offline' ? ' · offline' : ''}`
         : sync.state === 'offline'
-          ? 'Offline · dados do aparelho'
+          ? 'Sem conexão com o servidor'
           : sync.state === 'error'
-            ? 'Erro ao sincronizar'
+            ? 'Erro ao falar com o servidor'
             : sync.lastSyncAt
-              ? `Sincronizado às ${formatTime(sync.lastSyncAt)}`
+              ? `Atualizado às ${formatTime(sync.lastSyncAt)}`
               : 'Visão geral da clínica';
 
   return (
@@ -105,7 +105,7 @@ export default function PainelScreen() {
         <TouchableOpacity
           style={styles.dbBtn}
           onPress={() => setDbDebugOpen(true)}
-          accessibilityLabel="Ver dados locais e sincronização"
+          accessibilityLabel="Ver dados e conexão"
         >
           <Text style={styles.dbBtnText}>{sync.pending > 0 ? `⟳ ${sync.pending}` : '⟳'}</Text>
         </TouchableOpacity>

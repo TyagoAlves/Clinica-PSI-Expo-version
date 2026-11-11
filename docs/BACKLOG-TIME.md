@@ -60,7 +60,9 @@ Atualizado em 10/11/2026. Ambiente: ver `docs/DEV-SETUP.md`. Contrato da API: `a
 - [x] Serviços, evoluções (conteúdo cifrado) e membros — migração 2.
 - [x] Rotação de chave: `DATA_ENCRYPTION_KEY_ID` + `DATA_ENCRYPTION_OLD_KEYS` + `npm run rotate-key`.
 - [x] Auditoria LGPD (`audit_log` + `GET /clinics/:id/audit`, só dono/admin; nunca guarda conteúdo).
-- [ ] Revisar o modelo (`src/db/migrations.ts`) e decidir Postgres para produção.
+- [x] Banco de produção: **Supabase (PostgreSQL)**, com RLS ativa sem políticas (bloqueia a API REST automática).
+- [ ] Revisar o modelo (`src/db/migrations.ts`) e hospedar a API (Render/Railway/Fly) apontando para o Supabase.
+- [ ] Decidir se volta o modo offline (o `/sync` continua pronto na API).
 - [ ] Guarda da chave em produção (cofre/variável do host) e política de retenção/exclusão (LGPD).
 - [ ] Convite de profissionais para a clínica (hoje só o criador; `members` já lista todos).
 - [ ] Criptografia do SQLite no aparelho (SQLCipher exige development build, não roda no Expo Go).

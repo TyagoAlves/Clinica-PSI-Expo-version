@@ -1,11 +1,9 @@
 import { randomBytes, randomUUID } from 'node:crypto';
 import request from 'supertest';
 import { describe, expect, it } from 'vitest';
-import { createApp } from '../src/app.js';
-import { openDatabase } from '../src/db/connection.js';
-import { createSqliteRepositories } from '../src/repositories/sqlite.js';
+import { createPostgresRepositories } from '../src/repositories/postgres.js';
 import { createFieldCipher } from '../src/security/fieldCipher.js';
-import { auth, makeApp, patientChange, signUp } from './helpers.js';
+import { auth, makeApp, one, patientChange, signUp } from './helpers.js';
 
 async function createPatient(app: Parameters<typeof request>[0], token: string, clinicId: string, name = 'João') {
   const res = await request(app)
@@ -17,7 +15,7 @@ async function createPatient(app: Parameters<typeof request>[0], token: string, 
 
 describe('serviços e profissionais', () => {
   it('clínica nova vem com o catálogo padrão e lista os profissionais', async () => {
-    const { app } = makeApp();
+    const { app } = await makeApp();
     const { token, clinicId, userId } = await signUp(app);
     const services = await request(app).get(`/api/v1/clinics/${clinicId}/services`).set(auth(token));
     expect(services.body.items.map((s: { name: string }) => s.name)).toEqual(['Acompanhamento', 'Avaliação', 'Psicoterapia']);
@@ -27,7 +25,7 @@ describe('serviços e profissionais', () => {
   });
 
   it('CRUD de serviço, sem nome duplicado', async () => {
-    const { app } = makeApp();
+    const { app } = await makeApp();
     const { token, clinicId } = await signUp(app);
     const base = `/api/v1/clinics/${clinicId}/services`;
     const created = await request(app).post(base).set(auth(token)).send({ name: 'Orientação parental' });
@@ -42,7 +40,7 @@ describe('serviços e profissionais', () => {
 
 describe('evoluções (prontuário)', () => {
   it('cria, lista, edita e exclui; conteúdo cifrado; autor = usuário logado', async () => {
-    const { app, db } = makeApp();
+    const { app, db } = await makeApp();
     const { token, clinicId, userId } = await signUp(app);
     const p = await createPatient(app, token, clinicId);
     const base = `/api/v1/patients/${p.id}/evolutions`;
@@ -56,7 +54,7 @@ describe('evoluções (prontuário)', () => {
     expect(ev.body.authorId).toBe(userId);
     expect(ev.body.authorName).toBe('Ana Souza');
 
-    const row = db.prepare('SELECT content_enc FROM evolutions').get() as { content_enc: string };
+    const row = await one<{ content_enc: string }>(db, 'SELECT content_enc FROM evolutions');
     expect(row.content_enc).toMatch(/^v1:/);
     expect(row.content_enc).not.toContain('sono');
 
@@ -70,7 +68,7 @@ describe('evoluções (prontuário)', () => {
   });
 
   it('isola evoluções entre clínicas', async () => {
-    const { app } = makeApp();
+    const { app } = await makeApp();
     const a = await signUp(app);
     const b = await signUp(app);
     const p = await createPatient(app, a.token, a.clinicId);
@@ -86,7 +84,7 @@ describe('evoluções (prontuário)', () => {
 
 describe('paginação', () => {
   it('lista pacientes em páginas, com busca por nome', async () => {
-    const { app } = makeApp();
+    const { app } = await makeApp();
     const { token, clinicId } = await signUp(app);
     for (const n of ['Ana', 'Bruno', 'Carla', 'Daniel', 'Elisa']) await createPatient(app, token, clinicId, n);
     const base = `/api/v1/clinics/${clinicId}/patients`;
@@ -103,12 +101,7 @@ describe('paginação', () => {
   });
 
   it('pull do /sync vem em páginas até hasMore = false', async () => {
-    const db = openDatabase(':memory:');
-    const app = createApp({
-      repos: createSqliteRepositories(db, createFieldCipher(randomBytes(32))),
-      logRequests: false,
-      syncPageSize: 2,
-    });
+    const { app } = await makeApp({ syncPageSize: 2 });
     const { token } = await signUp(app);
     const pushed = Array.from({ length: 4 }, (_, i) => patientChange({ name: `P${i}` }));
     await request(app).post('/api/v1/sync').set(auth(token)).send({ changes: { patients: pushed } });
@@ -130,7 +123,7 @@ describe('paginação', () => {
 
 describe('sync de serviços e evoluções', () => {
   it('evolução criada offline sobe junto com o paciente e o autor é preservado', async () => {
-    const { app } = makeApp();
+    const { app } = await makeApp();
     const { token, userId } = await signUp(app);
     const p = patientChange();
     const now = new Date().toISOString();
@@ -147,7 +140,7 @@ describe('sync de serviços e evoluções', () => {
   });
 
   it('rejeita evolução apontando para paciente de outra clínica', async () => {
-    const { app } = makeApp();
+    const { app } = await makeApp();
     const a = await signUp(app);
     const b = await signUp(app);
     const p = await createPatient(app, a.token, a.clinicId);
@@ -160,7 +153,7 @@ describe('sync de serviços e evoluções', () => {
 
 describe('auditoria (LGPD)', () => {
   it('registra leitura e escrita de dado clínico; só o dono/admin consulta', async () => {
-    const { app, db } = makeApp();
+    const { app, db } = await makeApp();
     const { token, clinicId } = await signUp(app);
     const p = await createPatient(app, token, clinicId);
     await request(app).get(`/api/v1/patients/${p.id}`).set(auth(token));
@@ -171,12 +164,12 @@ describe('auditoria (LGPD)', () => {
     const actions = log.body.items.map((e: { action: string; entity: string }) => `${e.action}:${e.entity}`);
     expect(actions).toEqual(expect.arrayContaining(['create:patient', 'read:patient', 'create:evolution']));
     // A auditoria nunca guarda o conteúdo clínico.
-    const dump = JSON.stringify(db.prepare('SELECT * FROM audit_log').all());
+    const dump = JSON.stringify((await db.query('SELECT * FROM audit_log')));
     expect(dump).not.toContain('segredo');
 
     // Outro usuário (sem ser dono) na mesma clínica não pode — simulado vinculando um 2º usuário.
     const other = await signUp(app, { clinic: false });
-    db.prepare('UPDATE users SET clinic_id = ? WHERE id = ?').run(clinicId, other.userId);
+    await db.query('UPDATE users SET clinic_id = $1 WHERE id = $2', [clinicId, other.userId]);
     expect((await request(app).get(`/api/v1/clinics/${clinicId}/audit`).set(auth(other.token))).status).toBe(403);
     expect((await request(app).get(`/api/v1/clinics/${clinicId}/members`).set(auth(other.token))).body).toHaveLength(2);
   });
@@ -184,9 +177,8 @@ describe('auditoria (LGPD)', () => {
 
 describe('rotação de chave', () => {
   it('lê dados da chave antiga e re-cifra tudo com a nova', async () => {
-    const db = openDatabase(':memory:');
     const oldKey = randomBytes(32);
-    const appOld = createApp({ repos: createSqliteRepositories(db, createFieldCipher(oldKey, 'v1')), logRequests: false });
+    const { app: appOld, db } = await makeApp({ cipher: createFieldCipher(oldKey, 'v1') });
     const { token, clinicId } = await signUp(appOld);
     await request(appOld)
       .post(`/api/v1/clinics/${clinicId}/patients`)
@@ -195,17 +187,17 @@ describe('rotação de chave', () => {
 
     const newKey = randomBytes(32);
     const rotated = createFieldCipher(newKey, 'v2', new Map([['v1', oldKey]]));
-    const repos = createSqliteRepositories(db, rotated);
+    const repos = createPostgresRepositories(db, rotated);
     const before = (await repos.patients.list(clinicId, { limit: 10, offset: 0 })).items[0]!;
     expect(before.complaint).toBe('Insônia'); // decifra com a chave antiga
 
     expect(await repos.patients.reencryptAll!()).toBe(1);
     expect(await repos.patients.reencryptAll!()).toBe(0);
-    const row = db.prepare('SELECT complaint_enc FROM patients').get() as { complaint_enc: string };
+    const row = await one<{ complaint_enc: string }>(db, 'SELECT complaint_enc FROM patients');
     expect(row.complaint_enc).toMatch(/^v2:/);
 
     // Chave antiga descartada: só com a nova ainda lê tudo.
-    const onlyNew = createSqliteRepositories(db, createFieldCipher(newKey, 'v2'));
+    const onlyNew = createPostgresRepositories(db, createFieldCipher(newKey, 'v2'));
     expect((await onlyNew.patients.list(clinicId, { limit: 10, offset: 0 })).items[0]!.complaint).toBe('Insônia');
   });
 });

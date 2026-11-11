@@ -6,8 +6,8 @@ import { randomBytes, randomUUID } from 'node:crypto';
 import type { AddressInfo } from 'node:net';
 import autocannon from 'autocannon';
 import { createApp } from '../src/app.js';
-import { openDatabase } from '../src/db/connection.js';
-import { createSqliteRepositories } from '../src/repositories/sqlite.js';
+import { createPostgresRepositories } from '../src/repositories/postgres.js';
+import { createPgliteDb } from '../test/pgliteDb.js';
 import { createFieldCipher } from '../src/security/fieldCipher.js';
 
 const arg = (name: string, def: number) => {
@@ -17,8 +17,9 @@ const arg = (name: string, def: number) => {
 const connections = arg('connections', 20);
 const duration = arg('duration', 10);
 
-const db = openDatabase(':memory:');
-const app = createApp({ repos: createSqliteRepositories(db, createFieldCipher(randomBytes(32))), logRequests: false });
+// PostgreSQL embutido (PGlite): não toca no banco do Supabase.
+const db = await createPgliteDb();
+const app = createApp({ repos: createPostgresRepositories(db, createFieldCipher(randomBytes(32))), logRequests: false });
 const server = app.listen(0, '127.0.0.1');
 await new Promise((r) => server.once('listening', r));
 const base = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
@@ -80,13 +81,13 @@ const result = await autocannon({
   ],
 });
 
-const stored = (db.prepare('SELECT COUNT(*) AS n FROM patients').get() as { n: number }).n;
+const stored = (await db.query<{ n: number }>('SELECT COUNT(*)::int AS n FROM patients'))[0]!.n;
 const okSync = result['2xx'];
 console.log(autocannon.printResult(result));
 console.log(`Requisições 2xx: ${okSync} · não-2xx: ${result.non2xx} · erros: ${result.errors} · timeouts: ${result.timeouts}`);
 console.log(`Syncs respondidos com 200: ${syncOk} · pacientes gravados no banco: ${stored}`);
 server.close();
-db.close();
+await db.close();
 if (result.errors > 0 || result.non2xx > 0 || stored < syncOk) {
   console.error('FALHOU: erros, respostas não-2xx ou pacientes confirmados que não estão no banco.');
   process.exit(1);

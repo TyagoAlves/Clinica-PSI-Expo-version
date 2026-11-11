@@ -1,10 +1,9 @@
 // src/database/DatabaseProvider.tsx
-// Abre o SQLite local do aparelho e expõe os repositórios.
-import React, { createContext, useContext, useEffect, useState } from 'react';
-import { View, Text, ActivityIndicator, StyleSheet } from 'react-native';
-import * as SQLite from 'expo-sqlite';
-import { SyncTableRepo, PATIENTS_TABLE, SERVICES_TABLE, EVOLUTIONS_TABLE, APPOINTMENTS_TABLE } from './repositories/SyncTableRepo';
-import { SyncStateRepo } from './repositories/SyncStateRepo';
+// Fornece os repositórios de dados. Desde a migração para o Supabase, NÃO há banco no aparelho:
+// cada repositório lê/grava direto na API (que guarda tudo no PostgreSQL do Supabase).
+// O nome "DatabaseProvider"/useDatabase foi mantido para não mexer nas telas.
+import React, { createContext, useContext, useMemo } from 'react';
+import { ApiTableRepo } from './repositories/ApiTableRepo';
 import type {
   IAppointmentRepository,
   IEvolutionRepository,
@@ -12,100 +11,92 @@ import type {
   IServiceRepository,
   ISyncStateRepository,
 } from './repositories/types';
-import { migrateIfNeeded } from './migrate';
-import { colors } from '../theme';
+import type { AppointmentFields, EvolutionFields, PatientFields, ServiceFields } from '../services/apiTypes';
 
 interface DatabaseContextValue {
   patientRepo: IPatientRepository;
   serviceRepo: IServiceRepository;
   evolutionRepo: IEvolutionRepository;
   appointmentRepo: IAppointmentRepository;
+  /** Pequeno estado em memória (ex.: cache da lista de profissionais). */
   syncStateRepo: ISyncStateRepository;
-  /** Apaga todos os dados locais (logout). */
+  /** Limpa caches e avisa as telas (logout). */
   wipe(): Promise<void>;
+  /** Pede para todas as telas recarregarem do servidor. */
+  refreshAll(): void;
 }
 
 const DatabaseContext = createContext<DatabaseContextValue | null>(null);
 
 export const useDatabase = () => {
   const ctx = useContext(DatabaseContext);
-  if (!ctx) {
-    throw new Error('useDatabase deve ser usado dentro de um DatabaseProvider');
-  }
+  if (!ctx) throw new Error('useDatabase deve ser usado dentro de um DatabaseProvider');
   return ctx;
 };
 
-export const DatabaseProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [value, setValue] = useState<DatabaseContextValue | null>(null);
-  const [error, setError] = useState<string | null>(null);
+const q = (params: Record<string, string | undefined>) => {
+  const s = Object.entries(params)
+    .filter(([, v]) => v)
+    .map(([k, v]) => `${k}=${encodeURIComponent(v!)}`)
+    .join('&');
+  return s ? `?${s}` : '';
+};
 
-  useEffect(() => {
-    let active = true;
-    (async () => {
-      try {
-        const db = await SQLite.openDatabaseAsync('clinicapsi.db');
-        await migrateIfNeeded(db);
-        const patientRepo: IPatientRepository = new SyncTableRepo(db, PATIENTS_TABLE);
-        const serviceRepo: IServiceRepository = new SyncTableRepo(db, SERVICES_TABLE);
-        const evolutionRepo: IEvolutionRepository = new SyncTableRepo(db, EVOLUTIONS_TABLE);
-        const appointmentRepo: IAppointmentRepository = new SyncTableRepo(db, APPOINTMENTS_TABLE);
-        const syncStateRepo = new SyncStateRepo(db);
-        if (active) {
-          setValue({
-            patientRepo,
-            serviceRepo,
-            evolutionRepo,
-            appointmentRepo,
-            syncStateRepo,
-            wipe: async () => {
-              await patientRepo.clearAll();
-              await serviceRepo.clearAll();
-              await evolutionRepo.clearAll();
-              await appointmentRepo.clearAll();
-              await syncStateRepo.clearAll();
-            },
-          });
-        }
-      } catch (err: any) {
-        console.warn('[db] falha ao abrir o banco local:', err);
-        // Obs.: no navegador o expo-sqlite precisa de configuração extra (WASM); o alvo do app é Android/iOS.
-        if (active) setError(err?.message || 'Não foi possível abrir o banco local.');
-      }
-    })();
-    return () => {
-      active = false;
+class MemoryState implements ISyncStateRepository {
+  private m = new Map<string, string>();
+  async get(k: string) {
+    return this.m.get(k) ?? null;
+  }
+  async set(k: string, v: string) {
+    this.m.set(k, v);
+  }
+  async clearAll() {
+    this.m.clear();
+  }
+}
+
+export const DatabaseProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const value = useMemo<DatabaseContextValue>(() => {
+    const patientRepo = new ApiTableRepo<any, PatientFields>({
+      listPath: (c) => `/api/v1/clinics/${c}/patients`,
+      createPath: (c) => `/api/v1/clinics/${c}/patients`,
+      itemPath: (id) => `/api/v1/patients/${id}`,
+    });
+    const serviceRepo = new ApiTableRepo<any, ServiceFields>({
+      listPath: (c) => `/api/v1/clinics/${c}/services`,
+      createPath: (c) => `/api/v1/clinics/${c}/services`,
+      itemPath: (id) => `/api/v1/services/${id}`,
+    });
+    const evolutionRepo = new ApiTableRepo<any, EvolutionFields>({
+      // Com filtro de paciente: prontuário dele; sem filtro: últimas da clínica (Painel).
+      listPath: (c, f) =>
+        f.where?.patientId ? `/api/v1/patients/${f.where.patientId}/evolutions` : `/api/v1/clinics/${c}/evolutions`,
+      createPath: (_c, f) => `/api/v1/patients/${f.patientId}/evolutions`,
+      createBody: (f) => ({ sessionDate: f.sessionDate, content: f.content }),
+      itemPath: (id) => `/api/v1/evolutions/${id}`,
+      patchBody: (f) => ({ sessionDate: f.sessionDate, content: f.content }),
+    });
+    const appointmentRepo = new ApiTableRepo<any, AppointmentFields>({
+      listPath: (c, f) =>
+        `/api/v1/clinics/${c}/appointments${q({ from: f.range?.from, to: f.range?.to, patientId: f.where?.patientId })}`,
+      createPath: (c) => `/api/v1/clinics/${c}/appointments`,
+      itemPath: (id) => `/api/v1/appointments/${id}`,
+    });
+    const syncStateRepo = new MemoryState();
+    const all = [patientRepo, serviceRepo, evolutionRepo, appointmentRepo];
+    return {
+      patientRepo,
+      serviceRepo,
+      evolutionRepo,
+      appointmentRepo,
+      syncStateRepo,
+      refreshAll: () => all.forEach((r) => r.emit()),
+      wipe: async () => {
+        await syncStateRepo.clearAll();
+        all.forEach((r) => r.emit());
+      },
     };
   }, []);
 
-  if (error) {
-    return (
-      <View style={styles.center}>
-        <Text style={styles.errorTitle}>Erro no armazenamento do aparelho</Text>
-        <Text style={styles.text}>{error}</Text>
-      </View>
-    );
-  }
-
-  if (!value) {
-    return (
-      <View style={styles.center}>
-        <ActivityIndicator size="large" color={colors.primary} />
-        <Text style={styles.text}>Preparando dados do aparelho...</Text>
-      </View>
-    );
-  }
-
   return <DatabaseContext.Provider value={value}>{children}</DatabaseContext.Provider>;
 };
-
-const styles = StyleSheet.create({
-  center: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: colors.bg,
-    padding: 24,
-  },
-  errorTitle: { fontSize: 16, fontWeight: '700', color: colors.error, marginBottom: 8 },
-  text: { marginTop: 12, fontSize: 14, color: colors.textMuted, fontWeight: '500', textAlign: 'center' },
-});

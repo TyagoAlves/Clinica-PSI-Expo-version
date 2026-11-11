@@ -2,8 +2,8 @@
 // Tela 10 (Guia 14, Tyago) — Configurações, no layout do mock (seções Clínica, Conta, Privacidade,
 // Dados, Zona de perigo, Sobre), com as ações ligadas:
 //   Informações da clínica e Perfil e acesso → editam na API;
-//   Backup e exportação → exporta os dados do aparelho (JSON) pela folha de compartilhamento;
-//   Apagar dados locais → apaga o banco do aparelho e sai da conta (o servidor mantém os dados).
+//   Backup e exportação → exporta os dados da clínica (JSON) pela folha de compartilhamento;
+//   Sair deste aparelho → encerra a sessão (os dados ficam no servidor).
 // Aparência e Termos e privacidade ainda não têm tela/guia: avisam "em breve".
 import { useMemo, useState } from 'react';
 import { Alert, Share, Text, TouchableOpacity, View, StyleSheet } from 'react-native';
@@ -46,7 +46,7 @@ export default function ConfiguracoesScreen() {
 
   const exportar = () =>
     Alert.alert(
-      'Exportar dados do aparelho',
+      'Exportar dados da clínica',
       'O arquivo terá dados clínicos sigilosos SEM criptografia. Compartilhe só com destino seguro (ex.: seu próprio armazenamento).',
       [
         { text: 'Cancelar', style: 'cancel' },
@@ -77,21 +77,21 @@ export default function ConfiguracoesScreen() {
 
   const apagarLocal = () =>
     Alert.alert(
-      'Apagar dados deste aparelho?',
+      'Sair deste aparelho?',
       (sync.pending > 0
         ? `ATENÇÃO: ${sync.pending} alteração(ões) ainda não foram enviadas ao servidor e serão perdidas.\n\n`
         : '') +
-        'Os dados deste aparelho serão apagados e você sairá da conta. O que já está no servidor da clínica continua salvo e volta ao entrar de novo.',
+        'Sua sessão será encerrada neste aparelho. Os dados continuam salvos no servidor da clínica e voltam ao entrar de novo.',
       [
         { text: 'Cancelar', style: 'cancel' },
-        { text: 'Apagar e sair', style: 'destructive', onPress: () => logout().catch(() => {}) },
+        { text: 'Sair', style: 'destructive', onPress: () => logout().catch(() => {}) },
       ]
     );
 
   const sobre = () =>
     Alert.alert(
       'Sobre o sistema',
-      `Clínica Psi — Prontuário psicológico\nVersão ${APP_VERSION}\n\nServidor: ${API_BASE_URL}\nÚltima sincronização: ${
+      `Clínica Psi — Prontuário psicológico\nVersão ${APP_VERSION}\n\nServidor: ${API_BASE_URL}\nÚltima atualização: ${
         sync.lastSyncAt ? new Date(sync.lastSyncAt).toLocaleString('pt-BR') : 'nunca'
       }`
     );
@@ -136,15 +136,15 @@ export default function ConfiguracoesScreen() {
       key: 'backup',
       section: 'DADOS',
       title: 'Backup e exportação',
-      subtitle: 'Exporte uma cópia dos dados deste aparelho.',
+      subtitle: 'Exporte uma cópia dos dados da clínica.',
       icon: 'cloud-download-outline',
       onPress: exportar,
     },
     {
       key: 'apagar',
       section: 'ZONA DE PERIGO',
-      title: 'Apagar dados locais',
-      subtitle: 'Apaga os dados deste aparelho e sai da conta.',
+      title: 'Sair deste aparelho',
+      subtitle: 'Encerra a sessão e limpa os dados em memória.',
       icon: 'alert-circle-outline',
       onPress: apagarLocal,
       danger: true,
@@ -153,7 +153,7 @@ export default function ConfiguracoesScreen() {
       key: 'sobre',
       section: 'SOBRE',
       title: 'Sobre o sistema',
-      subtitle: `Versão ${APP_VERSION} · Prontuário com sincronização`,
+      subtitle: `Versão ${APP_VERSION} · Dados no servidor (Supabase)`,
       icon: 'information-circle-outline',
       onPress: sobre,
     },
@@ -176,7 +176,7 @@ export default function ConfiguracoesScreen() {
         rightActionIcon="ellipsis-vertical"
         onRightActionPress={() =>
           Alert.alert('Configurações', undefined, [
-            { text: 'Sincronizar agora', onPress: () => sync.syncNow() },
+            { text: 'Atualizar agora', onPress: () => sync.syncNow() },
             { text: 'Fechar', style: 'cancel' },
           ])
         }
@@ -219,7 +219,7 @@ export default function ConfiguracoesScreen() {
       })}
       {visiveis.length === 0 ? <Text style={styles.empty}>Nada encontrado para “{search.trim()}”.</Text> : null}
 
-      <Text style={styles.footerNote}>Seus dados ficam neste aparelho e são sincronizados com o servidor da clínica.</Text>
+      <Text style={styles.footerNote}>Seus dados ficam no servidor seguro da clínica (Supabase), com criptografia.</Text>
 
       <AppMenu visible={drawerOpen} onClose={() => setDrawerOpen(false)} active="configuracoes" />
       <ClinicaModal visible={clinicaOpen} onClose={() => setClinicaOpen(false)} clinic={clinic} onSave={updateClinic} />

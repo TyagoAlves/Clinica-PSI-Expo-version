@@ -2,21 +2,46 @@ import { randomBytes, randomUUID } from 'node:crypto';
 import type { Express } from 'express';
 import request from 'supertest';
 import { createApp } from '../src/app.js';
-import { openDatabase, type Db } from '../src/db/connection.js';
-import { createSqliteRepositories } from '../src/repositories/sqlite.js';
+import type { Db } from '../src/db/connection.js';
+import { createPostgresRepositories } from '../src/repositories/postgres.js';
 import { LoginRateLimiter } from '../src/security/loginRateLimiter.js';
-import { createFieldCipher } from '../src/security/fieldCipher.js';
+import { createFieldCipher, type FieldCipher } from '../src/security/fieldCipher.js';
+import { createPgliteDb, resetDb } from './pgliteDb.js';
 
 export interface TestCtx {
   app: Express;
   db: Db;
 }
 
-/** App com banco SQLite em memória e chave aleatória — cada teste começa limpo. */
-export function makeApp(limiter = new LoginRateLimiter()): TestCtx {
-  const db = openDatabase(':memory:');
-  const repos = createSqliteRepositories(db, createFieldCipher(randomBytes(32)));
-  return { app: createApp({ repos, logRequests: false, loginLimiter: limiter }), db };
+// Um PostgreSQL (PGlite) por arquivo de teste, zerado a cada makeApp().
+let shared: Promise<Db> | null = null;
+export async function testDb(): Promise<Db> {
+  shared ??= createPgliteDb();
+  const db = await shared;
+  await resetDb(db);
+  return db;
+}
+
+/** App com banco PostgreSQL em memória e chave aleatória — cada teste começa limpo. */
+export async function makeApp(
+  opts: { limiter?: LoginRateLimiter; cipher?: FieldCipher; syncPageSize?: number } = {}
+): Promise<TestCtx> {
+  const db = await testDb();
+  const repos = createPostgresRepositories(db, opts.cipher ?? createFieldCipher(randomBytes(32)));
+  return {
+    app: createApp({
+      repos,
+      logRequests: false,
+      loginLimiter: opts.limiter ?? new LoginRateLimiter(),
+      syncPageSize: opts.syncPageSize,
+    }),
+    db,
+  };
+}
+
+/** Primeira linha de uma consulta (atalho para asserções diretas no banco). */
+export async function one<T = Record<string, unknown>>(db: Db, sql: string, params: unknown[] = []): Promise<T> {
+  return (await db.query<T>(sql, params))[0] as T;
 }
 
 let seq = 0;

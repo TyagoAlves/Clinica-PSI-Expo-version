@@ -1,10 +1,10 @@
 import request from 'supertest';
 import { describe, expect, it } from 'vitest';
-import { auth, makeApp, signUp } from './helpers.js';
+import { auth, makeApp, one, signUp } from './helpers.js';
 
 describe('health', () => {
   it('GET /health responde ok com cabeçalhos de segurança', async () => {
-    const { app } = makeApp();
+    const { app } = await makeApp();
     const res = await request(app).get('/health');
     expect(res.status).toBe(200);
     expect(res.body.status).toBe('ok');
@@ -13,7 +13,7 @@ describe('health', () => {
   });
 
   it('rota inexistente devolve 404 em JSON', async () => {
-    const { app } = makeApp();
+    const { app } = await makeApp();
     const res = await request(app).get('/api/v1/nao-existe');
     expect(res.status).toBe(404);
     expect(res.body.error.code).toBe('route_not_found');
@@ -22,7 +22,7 @@ describe('health', () => {
 
 describe('auth', () => {
   it('registra, devolve token e não expõe hash/salt', async () => {
-    const { app } = makeApp();
+    const { app } = await makeApp();
     const res = await request(app)
       .post('/api/v1/auth/register')
       .send({ name: 'Ana', email: 'ANA@clinica.com.br', password: 'segredo1' });
@@ -34,7 +34,7 @@ describe('auth', () => {
   });
 
   it('recusa e-mail duplicado (sem diferenciar maiúsculas) com 409', async () => {
-    const { app } = makeApp();
+    const { app } = await makeApp();
     await signUp(app, { email: 'ana@clinica.com.br' });
     const res = await request(app)
       .post('/api/v1/auth/register')
@@ -43,7 +43,7 @@ describe('auth', () => {
   });
 
   it('valida campos com as mensagens do app', async () => {
-    const { app } = makeApp();
+    const { app } = await makeApp();
     const res = await request(app)
       .post('/api/v1/auth/register')
       .send({ name: 'Ana', email: 'ana@clinica.com.br', password: '123' });
@@ -52,15 +52,15 @@ describe('auth', () => {
   });
 
   it('banco não guarda a senha em claro', async () => {
-    const { app, db } = makeApp();
+    const { app, db } = await makeApp();
     await signUp(app, { email: 'ana@clinica.com.br' });
-    const row = db.prepare('SELECT password_hash FROM users').get() as { password_hash: string };
+    const row = await one<{ password_hash: string }>(db, 'SELECT password_hash FROM users');
     expect(row.password_hash).toMatch(/^pbkdf2\$\d+\$[0-9a-f]{64}$/);
     expect(row.password_hash).not.toContain('segredo1');
   });
 
   it('login aceita senha certa e recusa errada, substring e e-mail inexistente', async () => {
-    const { app } = makeApp();
+    const { app } = await makeApp();
     await signUp(app, { email: 'ana@clinica.com.br' });
 
     const ok = await request(app).post('/api/v1/auth/login').send({ email: 'ana@clinica.com.br', password: 'segredo1' });
@@ -77,7 +77,7 @@ describe('auth', () => {
   });
 
   it('bloqueia força bruta com 429 depois de 5 erros', async () => {
-    const { app } = makeApp();
+    const { app } = await makeApp();
     await signUp(app, { email: 'ana@clinica.com.br' });
     for (let i = 0; i < 5; i++) {
       await request(app).post('/api/v1/auth/login').send({ email: 'ana@clinica.com.br', password: 'errada99' });
@@ -88,7 +88,7 @@ describe('auth', () => {
   });
 
   it('rotas protegidas exigem token; logout revoga o token', async () => {
-    const { app } = makeApp();
+    const { app } = await makeApp();
     expect((await request(app).get('/api/v1/me')).status).toBe(401);
     expect((await request(app).get('/api/v1/me').set(auth('token-falso'))).status).toBe(401);
 
@@ -104,7 +104,7 @@ describe('auth', () => {
 
 describe('clínicas', () => {
   it('vincula o usuário à clínica criada e deriva a sigla', async () => {
-    const { app } = makeApp();
+    const { app } = await makeApp();
     const { token, clinicId } = await signUp(app);
     const me = await request(app).get('/api/v1/me').set(auth(token));
     expect(me.body.user.clinicId).toBe(clinicId);
@@ -112,7 +112,7 @@ describe('clínicas', () => {
   });
 
   it('não deixa criar segunda clínica nem ver clínica alheia', async () => {
-    const { app } = makeApp();
+    const { app } = await makeApp();
     const a = await signUp(app);
     const b = await signUp(app);
     const again = await request(app).post('/api/v1/clinics').set(auth(a.token)).send({ name: 'Outra' });
@@ -124,7 +124,7 @@ describe('clínicas', () => {
 
 describe('pacientes', () => {
   it('CRUD com regras de negócio e soft delete', async () => {
-    const { app } = makeApp();
+    const { app } = await makeApp();
     const { token, clinicId } = await signUp(app);
     const base = `/api/v1/clinics/${clinicId}/patients`;
 
@@ -154,7 +154,7 @@ describe('pacientes', () => {
   });
 
   it('isola pacientes entre clínicas', async () => {
-    const { app } = makeApp();
+    const { app } = await makeApp();
     const a = await signUp(app);
     const b = await signUp(app);
     const p = await request(app)
@@ -168,14 +168,14 @@ describe('pacientes', () => {
   });
 
   it('campos clínicos ficam cifrados no banco e legíveis na API', async () => {
-    const { app, db } = makeApp();
+    const { app, db } = await makeApp();
     const { token, clinicId } = await signUp(app);
     const created = await request(app)
       .post(`/api/v1/clinics/${clinicId}/patients`)
       .set(auth(token))
       .send({ name: 'João', phone: '11', service: 'Psicoterapia', complaint: 'Crises de pânico', document: '123.456.789-00' });
 
-    const row = db.prepare('SELECT complaint_enc, document_enc FROM patients').get() as Record<string, string>;
+    const row = await one<Record<string, string>>(db, 'SELECT complaint_enc, document_enc FROM patients');
     expect(row.complaint_enc).toMatch(/^v1:/);
     expect(row.complaint_enc).not.toContain('pânico');
     expect(row.document_enc).not.toContain('123.456');
@@ -183,7 +183,7 @@ describe('pacientes', () => {
   });
 
   it('id inválido devolve 400', async () => {
-    const { app } = makeApp();
+    const { app } = await makeApp();
     const { token } = await signUp(app);
     expect((await request(app).get('/api/v1/patients/abc').set(auth(token))).status).toBe(400);
   });

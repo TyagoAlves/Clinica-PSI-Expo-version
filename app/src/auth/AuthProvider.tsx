@@ -1,6 +1,6 @@
 // src/auth/AuthProvider.tsx
 // Sessão do usuário. Login e cadastro exigem internet (a conta mora no servidor);
-// depois disso o app funciona offline: o token e o perfil ficam no SecureStore do aparelho.
+// o token e o perfil ficam no SecureStore do aparelho (o restante dos dados fica só no servidor).
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import * as SecureStore from 'expo-secure-store';
 import { api, ApiError, setAuthToken, setUnauthorizedHandler } from '../services/api';

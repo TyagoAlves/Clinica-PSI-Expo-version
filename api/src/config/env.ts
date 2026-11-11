@@ -13,7 +13,10 @@ const EnvSchema = z.object({
         .map((s) => s.trim())
         .filter(Boolean)
     ),
-  DB_PATH: z.string().default('./data/clinica.db'),
+  /** Connection string PostgreSQL do Supabase (Connect → Session pooler). Contém a senha: só no .env. */
+  DATABASE_URL: z
+    .string({ required_error: 'Defina DATABASE_URL no .env (Supabase → Connect → Session pooler).' })
+    .regex(/^postgres(ql)?:\/\//, 'DATABASE_URL precisa começar com postgresql://'),
   DATA_ENCRYPTION_KEY: z
     .string({ required_error: 'Defina DATA_ENCRYPTION_KEY no .env (gere com: npm run gen:key).' })
     .min(1, 'Defina DATA_ENCRYPTION_KEY no .env (gere com: npm run gen:key).'),

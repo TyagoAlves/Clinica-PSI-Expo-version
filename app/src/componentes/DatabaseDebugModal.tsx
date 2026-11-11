@@ -1,5 +1,5 @@
 // src/componentes/DatabaseDebugModal.tsx
-// Painel técnico (dev/suporte): sessão, conexão com a API, sincronização e dados no aparelho.
+// Painel técnico (dev/suporte): sessão, conexão com a API e dados do servidor.
 import React, { useState, useEffect, useCallback } from 'react';
 import { Modal, View, Text, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
 import { useDatabase } from '../database/DatabaseProvider';
@@ -15,7 +15,7 @@ type ApiStatus =
   | { state: 'ok'; detail: string }
   | { state: 'error'; detail: string };
 
-const SYNC_LABEL = { idle: 'Em dia', syncing: 'Sincronizando…', offline: 'Sem conexão', error: 'Erro' } as const;
+const SYNC_LABEL = { idle: 'Conectado', syncing: 'Atualizando…', offline: 'Sem conexão', error: 'Erro' } as const;
 
 export default function DatabaseDebugModal({ visible, onClose }: { visible: boolean; onClose: () => void }) {
   const { patientRepo } = useDatabase();
@@ -55,7 +55,7 @@ export default function DatabaseDebugModal({ visible, onClose }: { visible: bool
         <View style={styles.sheet}>
           <View style={styles.header}>
             <View>
-              <Text style={styles.title}>Dados e sincronização</Text>
+              <Text style={styles.title}>Dados e conexão</Text>
               <Text style={styles.subtitle}>Diagnóstico do aparelho e da conexão</Text>
             </View>
             <TouchableOpacity onPress={onClose} style={styles.closeBtn} accessibilityLabel="Fechar">
@@ -102,10 +102,10 @@ export default function DatabaseDebugModal({ visible, onClose }: { visible: bool
 
             {/* Sincronização */}
             <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Sincronização</Text>
+              <Text style={styles.sectionTitle}>Conexão</Text>
               <View style={styles.itemCard} testID="sync-status">
                 <Text style={[styles.itemName, sync.state === 'error' && styles.apiError]}>
-                  {SYNC_LABEL[sync.state]} · {sync.pending} pendente(s)
+                  {SYNC_LABEL[sync.state]}
                 </Text>
                 <Text style={styles.itemDetail}>
                   Última: {sync.lastSyncAt ? new Date(sync.lastSyncAt).toLocaleString('pt-BR') : 'nunca'}
@@ -117,15 +117,15 @@ export default function DatabaseDebugModal({ visible, onClose }: { visible: bool
             {/* Pacientes no aparelho */}
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>
-                Pacientes no aparelho ({patients.length} {patients.length === 1 ? 'registro' : 'registros'})
+                Pacientes no servidor ({patients.length} {patients.length === 1 ? 'registro' : 'registros'})
               </Text>
               {patients.length === 0 ? (
-                <Text style={styles.emptyText}>Nenhum paciente neste aparelho.</Text>
+                <Text style={styles.emptyText}>Nenhum paciente cadastrado.</Text>
               ) : (
                 patients.map((p) => (
                   <View key={p.id} style={styles.itemCard}>
                     <Text style={styles.itemName}>
-                      {p.name} {p.dirty ? '· pendente' : '· enviado'}
+                      {p.name}
                     </Text>
                     <Text style={styles.itemDetail}>ID: {p.id}</Text>
                     <Text style={styles.itemDetail}>
@@ -146,7 +146,7 @@ export default function DatabaseDebugModal({ visible, onClose }: { visible: bool
               accessibilityRole="button"
             >
               <Text style={styles.refreshBtnText}>
-                {sync.state === 'syncing' ? 'Sincronizando…' : 'Sincronizar agora'}
+                {sync.state === 'syncing' ? 'Atualizando…' : 'Atualizar agora'}
               </Text>
             </TouchableOpacity>
           </View>

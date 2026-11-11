@@ -414,14 +414,15 @@ export default function NovoPacienteModal({ visible, onClose, onSaved, professio
                 maxLength={500}
               />
             </View>
-
-            {error ? (
-              <View style={styles.errorBox} accessibilityLiveRegion="polite">
-                <Ionicons name="alert-circle-outline" size={16} color={colors.error} />
-                <Text style={styles.errorText}>{error}</Text>
-              </View>
-            ) : null}
           </ScrollView>
+
+          {/* Erro fixo acima dos botões (visível sem rolar — ex.: "Sem conexão com o servidor") */}
+          {error ? (
+            <View style={[styles.errorBox, { marginHorizontal: 16, marginTop: 8, width: undefined, alignSelf: 'stretch' }]} accessibilityLiveRegion="polite">
+              <Ionicons name="alert-circle-outline" size={16} color={colors.error} />
+              <Text style={styles.errorText}>{error}</Text>
+            </View>
+          ) : null}
 
           {/* Footer */}
           <View style={[styles.footer, { paddingBottom: Math.max(18, insets.bottom + 12) }]}>

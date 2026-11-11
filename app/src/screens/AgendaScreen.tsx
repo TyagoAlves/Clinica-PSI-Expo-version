@@ -2,7 +2,7 @@
 // Tela 8 (GUIA_12, Tyago) — Agenda: sessões por dia.
 // Visual do mock: toolbar com ⋮, faixa "Agenda / Sessões por dia", navegação ‹ Hoje · DD/MM/AAAA ›
 // e o estado vazio ilustrado quando ainda não há pacientes. Com pacientes, lista as sessões do dia
-// (gravadas no aparelho e sincronizadas com a API).
+// (lidas e gravadas direto na API / Supabase).
 import { useMemo, useState } from 'react';
 import { Alert, View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';

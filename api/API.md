@@ -1,5 +1,7 @@
 # clinica-api — referência dos endpoints (v1)
 
+Banco: **PostgreSQL no Supabase** (`DATABASE_URL`). Tabelas com RLS ativa e sem políticas: só esta API acessa os dados.
+
 Base: `http://<host>:3333`. JSON em UTF-8. Erros sempre no formato:
 
 ```json

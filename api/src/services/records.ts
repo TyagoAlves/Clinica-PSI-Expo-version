@@ -115,6 +115,13 @@ export class EvolutionService extends RecordService<Evolution, EvolutionFields> 
     return this.repo.list(clinicId, { limit, offset, where: { patientId } });
   }
 
+  /** Últimas evoluções da clínica (Painel → "Últimos registros"). */
+  async listRecent(actor: Actor, clinicId: string, limit: number, offset: number): Promise<Page<Evolution>> {
+    assertClinicAccess(actor.user, clinicId);
+    await this.audit.log(actor, 'list', 'evolution', null);
+    return this.repo.list(clinicId, { limit, offset });
+  }
+
   async create(actor: Actor, patientId: string, fields: Pick<EvolutionFields, 'sessionDate' | 'content'>): Promise<Evolution> {
     const clinicId = requireClinic(actor.user);
     await this.ensurePatient(clinicId, patientId);
@@ -142,10 +149,18 @@ export class AppointmentService extends RecordService<Appointment, AppointmentFi
   }
 
   /** Sessões da clínica num intervalo de datas (AAAA-MM-DD), em ordem de data/hora. */
-  async listRange(actor: Actor, clinicId: string, from: string | undefined, to: string | undefined, limit: number, offset: number) {
+  async listRange(
+    actor: Actor,
+    clinicId: string,
+    from: string | undefined,
+    to: string | undefined,
+    limit: number,
+    offset: number,
+    patientId?: string
+  ) {
     assertClinicAccess(actor.user, clinicId);
-    await this.audit.log(actor, 'list', 'appointment', null);
-    return this.repo.list(clinicId, { limit, offset, range: { key: 'date', from, to } });
+    await this.audit.log(actor, 'list', 'appointment', patientId ?? null);
+    return this.repo.list(clinicId, { limit, offset, range: { key: 'date', from, to }, where: patientId ? { patientId } : undefined });
   }
 
   async create(actor: Actor, clinicId: string, fields: AppointmentFields): Promise<Appointment> {

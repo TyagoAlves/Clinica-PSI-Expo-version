@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import request from 'supertest';
 import { describe, expect, it } from 'vitest';
-import { auth, makeApp, patientChange, signUp } from './helpers.js';
+import { auth, makeApp, one, patientChange, signUp } from './helpers.js';
 
 type App = Parameters<typeof request>[0];
 
@@ -15,7 +15,7 @@ async function createPatient(app: App, token: string, clinicId: string, name = '
 
 describe('serviços completos (Tela 9)', () => {
   it('catálogo padrão vem com descrição, duração, preço e ativo', async () => {
-    const { app } = makeApp();
+    const { app } = await makeApp();
     const { token, clinicId } = await signUp(app);
     const res = await request(app).get(`/api/v1/clinics/${clinicId}/services`).set(auth(token));
     const psico = res.body.items.find((s: { name: string }) => s.name === 'Psicoterapia');
@@ -28,7 +28,7 @@ describe('serviços completos (Tela 9)', () => {
   });
 
   it('cria com todos os campos, desativa pelo toggle e valida valores', async () => {
-    const { app } = makeApp();
+    const { app } = await makeApp();
     const { token, clinicId } = await signUp(app);
     const base = `/api/v1/clinics/${clinicId}/services`;
     const bad = await request(app).post(base).set(auth(token)).send({ name: 'X', durationMin: 2 });
@@ -50,7 +50,7 @@ describe('serviços completos (Tela 9)', () => {
 
 describe('agenda — sessões (Tela 8)', () => {
   it('CRUD, filtro por dia e ordenação por horário', async () => {
-    const { app } = makeApp();
+    const { app } = await makeApp();
     const { token, clinicId } = await signUp(app);
     const p = await createPatient(app, token, clinicId);
     const base = `/api/v1/clinics/${clinicId}/appointments`;
@@ -74,7 +74,7 @@ describe('agenda — sessões (Tela 8)', () => {
   });
 
   it('isola sessões entre clínicas e exige paciente da própria clínica', async () => {
-    const { app } = makeApp();
+    const { app } = await makeApp();
     const a = await signUp(app);
     const b = await signUp(app);
     const p = await createPatient(app, a.token, a.clinicId);
@@ -91,7 +91,7 @@ describe('agenda — sessões (Tela 8)', () => {
   });
 
   it('sessão criada offline sobe pelo /sync junto com o paciente; observações cifradas', async () => {
-    const { app, db } = makeApp();
+    const { app, db } = await makeApp();
     const { token } = await signUp(app);
     const p = patientChange();
     const now = new Date().toISOString();
@@ -112,14 +112,14 @@ describe('agenda — sessões (Tela 8)', () => {
     const res = await request(app).post('/api/v1/sync').set(auth(token)).send({ changes: { patients: [p], appointments: [appt] } });
     expect(res.body.rejected).toEqual([]);
     expect(res.body.changes.appointments[0]).toMatchObject({ id: appt.id, time: '08:00', notes: 'Trazer exames' });
-    const row = db.prepare('SELECT notes_enc FROM appointments').get() as { notes_enc: string };
+    const row = await one<{ notes_enc: string }>(db, 'SELECT notes_enc FROM appointments');
     expect(row.notes_enc).not.toContain('exames');
   });
 });
 
 describe('perfil e senha (Tela 10 — Configurações)', () => {
   it('edita nome e CRP', async () => {
-    const { app } = makeApp();
+    const { app } = await makeApp();
     const { token } = await signUp(app);
     const res = await request(app).patch('/api/v1/me').set(auth(token)).send({ name: 'Ana S. Souza', crp: 'CRP 06/654321' });
     expect(res.body).toMatchObject({ name: 'Ana S. Souza', crp: 'CRP 06/654321' });
@@ -128,7 +128,7 @@ describe('perfil e senha (Tela 10 — Configurações)', () => {
   });
 
   it('troca a senha exigindo a atual e encerra as outras sessões', async () => {
-    const { app } = makeApp();
+    const { app } = await makeApp();
     const { token, email } = await signUp(app);
     const other = await request(app).post('/api/v1/auth/login').send({ email, password: 'segredo1' });
 
@@ -148,5 +148,26 @@ describe('perfil e senha (Tela 10 — Configurações)', () => {
     expect((await request(app).get('/api/v1/me').set(auth(other.body.token))).status).toBe(401); // outra caiu
     expect((await request(app).post('/api/v1/auth/login').send({ email, password: 'segredo1' })).status).toBe(401);
     expect((await request(app).post('/api/v1/auth/login').send({ email, password: 'novaSenha9' })).status).toBe(200);
+  });
+});
+
+describe('consultas usadas pelo app online', () => {
+  it('últimas evoluções da clínica e sessões de um paciente', async () => {
+    const { app } = await makeApp();
+    const { token, clinicId } = await signUp(app);
+    const p1 = await createPatient(app, token, clinicId, 'Ana');
+    const p2 = await createPatient(app, token, clinicId, 'Bia');
+    for (const p of [p1, p2]) {
+      await request(app).post(`/api/v1/patients/${p.id}/evolutions`).set(auth(token)).send({ sessionDate: '10/11/2026', content: `evo ${p.id}` });
+      await request(app)
+        .post(`/api/v1/clinics/${clinicId}/appointments`)
+        .set(auth(token))
+        .send({ patientId: p.id, date: '2026-11-12', time: '09:00', durationMin: 50 });
+    }
+    const recent = await request(app).get(`/api/v1/clinics/${clinicId}/evolutions?limit=5`).set(auth(token));
+    expect(recent.body.items).toHaveLength(2);
+    const doP1 = await request(app).get(`/api/v1/clinics/${clinicId}/appointments?patientId=${p1.id}`).set(auth(token));
+    expect(doP1.body.items).toHaveLength(1);
+    expect(doP1.body.items[0].patientId).toBe(p1.id);
   });
 });

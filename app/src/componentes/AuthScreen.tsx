@@ -43,7 +43,7 @@ export default function AuthScreen({ children }: { children: ReactNode }) {
             <BrandHeader />
             {children}
             <Text style={styles.footer}>
-              Os dados ficam neste aparelho e são sincronizados com segurança com o servidor da clínica.
+              Os dados ficam no servidor seguro da clínica, protegidos por criptografia.
             </Text>
           </ScrollView>
         </ScrollContext.Provider>

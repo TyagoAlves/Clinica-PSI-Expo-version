@@ -158,6 +158,10 @@ export function createApiRouter({
     const { limit, offset } = pageOf(req);
     res.json(await evolutions.listByPatient(actorOf(req), uuidParam(req), limit, offset));
   });
+  r.get('/clinics/:clinicId/evolutions', authed, async (req, res) => {
+    const { limit, offset } = pageOf(req);
+    res.json(await evolutions.listRecent(actorOf(req), uuidParam(req, 'clinicId'), limit, offset));
+  });
   r.post('/patients/:id/evolutions', authed, async (req, res) => {
     res.status(201).json(await evolutions.create(actorOf(req), uuidParam(req), parseBody(EvolutionCreateSchema, req)));
   });
@@ -189,8 +193,8 @@ export function createApiRouter({
 
   // ---- Agenda (sessões) ----
   r.get('/clinics/:clinicId/appointments', authed, async (req, res) => {
-    const { from, to, limit, offset } = AppointmentRangeSchema.parse(req.query);
-    res.json(await appointments.listRange(actorOf(req), uuidParam(req, 'clinicId'), from, to, limit, offset));
+    const { from, to, limit, offset, patientId } = AppointmentRangeSchema.parse(req.query);
+    res.json(await appointments.listRange(actorOf(req), uuidParam(req, 'clinicId'), from, to, limit, offset, patientId));
   });
   r.post('/clinics/:clinicId/appointments', authed, async (req, res) => {
     const fields = parseBody(AppointmentFieldsSchema, req);

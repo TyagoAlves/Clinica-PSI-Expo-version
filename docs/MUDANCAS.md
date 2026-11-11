@@ -22,6 +22,7 @@
 9. [Apêndice — lista de arquivos](#9-apêndice--lista-de-arquivos)
 10. [Reorganização das pastas](#10-reorganização-das-pastas)
 11. [Integração da branch `Dev` do Tyago (Telas 7 a 10)](#11-integração-da-branch-dev-do-tyago-telas-7-a-10)
+12. [Migração para o Supabase (PostgreSQL)](#12-migração-para-o-supabase-postgresql--sqlite-removido-de-tudo)
 
 ---
 
@@ -443,3 +444,47 @@ A integração portou o **visual** dele para o `app/` e ligou cada tela aos **da
 ### 11.4 Validação no emulador
 Serviços (toggle refletiu no servidor), Agenda (sessão criada, apareceu no servidor e no Painel), Configurações
 (edição da clínica salva na API), Pacientes (layout novo). Capturas em `docs/screenshots/17-*` a `20-*`.
+
+---
+
+## 12. Migração para o Supabase (PostgreSQL) — SQLite removido de tudo
+
+Decisão do usuário: trocar o SQLite **do servidor e do celular** pelo Supabase.
+
+### 12.1 ⚠️ Consequência principal: o app deixou de funcionar offline
+O modo **offline-first** (seções 2 e 11) foi **desligado**. Agora:
+- o celular **não guarda dados de pacientes** (só o token de login, no SecureStore);
+- toda leitura e gravação vai direto para a API → Supabase; **sem internet, o app mostra erro** ("Sem conexão com o servidor");
+- o selo "pendente" e a fila de sincronização deixaram de existir (o código das telas foi mantido, mas `pending` é sempre 0).
+
+O endpoint `/sync` **continua na API** (com testes), caso o time queira voltar ao modo offline no futuro.
+
+### 12.2 API (`api/`)
+| Antes | Agora |
+|---|---|
+| `node:sqlite`, arquivo `api/data/clinica.db` | **PostgreSQL do Supabase** via driver `postgres` (postgres.js), `prepare: false` (compatível com o pooler) |
+| `DB_PATH` no `.env` | **`DATABASE_URL`** (Supabase → Connect → Session pooler). Contém a senha: só no `.env`, nunca no git |
+| `src/repositories/sqlite.ts` (síncrono) | `src/repositories/postgres.ts` (assíncrono, `$1…`, mesmas interfaces) |
+| 3 migrações SQLite | 1 migração PostgreSQL consolidada (`src/db/migrations.ts`) |
+| Testes em SQLite em memória | Testes em **PGlite** (PostgreSQL real em WASM, dentro do Node): mesmo SQL do Supabase, sem rede |
+
+**Segurança específica do Supabase:** todas as tabelas têm **Row Level Security ativa e sem políticas**.
+Assim, a API REST automática do Supabase (que aceita a chave *publishable*) **não lê nem grava nada**;
+só a nossa API, conectando como dono do banco, acessa os dados. Criptografia de campos, auditoria e
+isolamento por clínica continuam na nossa API, iguais.
+
+Rotas novas para o app online: `GET /clinics/:id/evolutions` (últimas da clínica) e filtro `patientId` em
+`GET /clinics/:id/appointments`. **46 testes** passando; teste de carga ok.
+
+### 12.3 App (`app/`)
+| Antes | Agora |
+|---|---|
+| `expo-sqlite` + `migrate.ts` + `SyncTableRepo` + `SyncStateRepo` | **Removidos** (dependência desinstalada, plugin tirado do `app.json`) |
+| Repositórios gravavam no SQLite local | `ApiTableRepo.ts`: mesma interface, mas cada operação é uma chamada HTTP à API |
+| `SyncProvider` fazia push/pull | Agora só acompanha a conexão, busca os profissionais e "Atualizar agora" recarrega as telas |
+| Textos "dados neste aparelho / sincronizados" | "Dados no servidor seguro da clínica (Supabase), com criptografia"; "Apagar dados locais" virou "Sair deste aparelho" |
+
+### 12.4 Dados antigos
+O banco SQLite antigo (`api/data/clinica.db`, com a conta de teste `ana@clinica.com.br`) **não foi migrado**:
+eram só dados de teste. No Supabase o banco começa vazio — é preciso criar a conta de novo pelo app.
+O arquivo antigo continua na pasta (ignorado pelo git) e pode ser apagado.
