@@ -452,7 +452,7 @@ Não instale React Navigation ainda. A navegação entra na fase seguinte, com o
 
 - `KeyboardAvoidingView` garante que o botão "Entrar" não fique escondido atrás do teclado.
 - `behavior="padding"` no **iOS**: o teclado empurra o layout.
-- No **Android**, `behavior="height"` encolhe a altura útil da tela pelo teclado — mais confiável que `adjustResize` em todos os dispositivos. Se mesmo assim um campo baixo ficar sob o teclado, ver Guia 02 §7.11 (`useAuthScroll` + `onFocus`).
+- No **Android**, `behavior="height"` encolhe a altura útil da tela pelo teclado — mais confiável que `adjustResize` em todos os dispositivos. Se mesmo assim um campo baixo ficar sob o teclado, ver [Guia 02](../Tela%202/GUIA_02_TELA_CADASTRO_EXPO.md) §7.11 (`useAuthScroll` + `onFocus`).
 - `ScrollView` com `keyboardShouldPersistTaps="handled"` deixa tocar no botão mesmo com teclado aberto — sem isso, o primeiro toque "fecha o teclado" e o toque seguinte é que dispara o botão.
 - `Keyboard.dismiss()` no submit: fecha o teclado ao enviar, como no web app.
 
@@ -681,3 +681,9 @@ Não instale React Navigation ainda. A navegação entra na fase seguinte, com o
 
 ---
 *Referências de design: `login-s21fe.png` (mock desta fase); tokens no `src/theme.js` desta entrega. Cores e espaçamentos vêm do Penpot criado para a Clínica Psi. Nada de cor inventada.*
+
+---
+
+| ◀ Anterior | Todos os guias | Próximo ▶ |
+| :--- | :---: | ---: |
+| — | [Índice](../README.md) | [Guia 02 — Cadastro (Passo 1)](../Tela%202/GUIA_02_TELA_CADASTRO_EXPO.md) |

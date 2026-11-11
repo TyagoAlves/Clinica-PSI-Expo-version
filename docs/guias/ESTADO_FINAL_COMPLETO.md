@@ -7,7 +7,7 @@
 
 > 📌 Se você está seguindo os guias na ordem, este arquivo é o seu ponto de conferência final: o app no seu Snack/projeto precisa ficar **exatamente** assim. Se divergir em algum arquivo, a fonte da verdade é o guia da fase ou este retrato — nunca "mais ou menos".
 >
-> 🔗 Comentários de linha aqui são curtos de propósito. A explicação *por que* cada decisão existe (com os mockups e o passo a passo) está nos guias: `Tela 1` (GUIA_01 Login) → `Tela 2` (GUIA_02 Cadastro 1, GUIA_03B refactor, GUIA_03 navegação) → `Tela 3` (GUIA_04 Cadastro 2) → `Tela 4` (GUIA_07 Painel, GUIA_08 barras de sistema) → `Tela 5` (GUIA_09 Novo Paciente) → `Tela 6` (GUIA_10 menu) → `Tela 7` (GUIA_11 Pacientes vazio + drawer) → Tela 8 (GUIA_12 Agenda) → Tela 9 (GUIA_13 Serviços).
+> 🔗 Comentários de linha aqui são curtos de propósito. A explicação *por que* cada decisão existe (com os mockups e o passo a passo) está nos guias: `Tela 1` ([GUIA_01](Tela%201/GUIA_01_TELA_LOGIN_EXPO.md) Login) → `Tela 2` ([GUIA_02](Tela%202/GUIA_02_TELA_CADASTRO_EXPO.md) Cadastro 1, [GUIA_03B](Tela%202/GUIA_03B_REFATORACAO_COMPONENTES_TELA_1.md) refactor, [GUIA_03](Tela%202/GUIA_03_NAVEGACAO_EXPO.md) navegação) → `Tela 3` ([GUIA_04](Tela%203/GUIA_04_TELA_CADASTRO_PASSO2_EXPO.md) Cadastro 2) → `Tela 4` ([GUIA_07](Tela%204/GUIA_07_PAINEL_EXPO.md) Painel, [GUIA_08](Tela%204/GUIA_08_BARRAS_SISTEMA_EXPO.md) barras de sistema) → `Tela 5` ([GUIA_09](Tela%205/GUIA_09_NOVO_PACIENTE_EXPO.md) Novo Paciente) → `Tela 6` ([GUIA_10](Tela%206/GUIA_10_MENU_EXPO.md) menu) → `Tela 7` ([GUIA_11](Tela%207/GUIA_11_PACIENTES_VAZIO_EXPO.md) Pacientes vazio + drawer) → Tela 8 ([GUIA_12](Tela%208/GUIA_12_AGENDA_EXPO.md) Agenda) → Tela 9 ([GUIA_13](Tela%209/GUIA_13_SERVICOS_EXPO.md) Serviços).
 
 ---
 
@@ -55,7 +55,7 @@
 | 22 | `src/screens/ServicosScreen.tsx` | GUIA_13 (Tela 9) |
 | 23 | `App.js` (raiz) | GUIA_03 → GUIA_07 → GUIA_08 → GUIA_12 → GUIA_13 (final) |
 
-> **O Snack já vem com `package.json` / `App.js`.** Não edite `package.json`. As dependências `@expo/vector-icons` e `react-native-safe-area-context` já estão no Expo Go — nada para instalar. Se você colar tudo e algo quebrar no Snack, confira o **Console**: o caminho do arquivo que ele procura sempre aparece na mensagem de erro (guia GUIA_01 §8.15 explica o processo).
+> **O Snack já vem com `package.json` / `App.js`.** Não edite `package.json`. As dependências `@expo/vector-icons` e `react-native-safe-area-context` já estão no Expo Go — nada para instalar. Se você colar tudo e algo quebrar no Snack, confira o **Console**: o caminho do arquivo que ele procura sempre aparece na mensagem de erro (guia [GUIA_01](Tela%201/GUIA_01_TELA_LOGIN_EXPO.md) §8.15 explica o processo).
 
 ---
 

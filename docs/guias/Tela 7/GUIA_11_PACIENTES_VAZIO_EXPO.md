@@ -476,3 +476,9 @@ export default function PacientesScreen(
 ## 9. Próximo passo
 
 - **Tela 8**: voltar à decisão estética de "quais dados reais aparecem primeiro" (painel vs. pacientes vs. agenda) ou avançar para o estado com dados na lista de pacientes.
+
+---
+
+| ◀ Anterior | Todos os guias | Próximo ▶ |
+| :--- | :---: | ---: |
+| [Guia 10 — Menu lateral (drawer)](../Tela%206/GUIA_10_MENU_EXPO.md) | [Índice](../README.md) | [Guia 12 — Agenda](../Tela%208/GUIA_12_AGENDA_EXPO.md) |

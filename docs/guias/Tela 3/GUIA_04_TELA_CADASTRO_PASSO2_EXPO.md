@@ -18,7 +18,7 @@
 | `screens/CadastroPasso1Screen.tsx` | **nenhum** (o Passo 1 chama Passo 2 pela navegação) |
 | `screens/CadastroPasso2Screen.tsx` | **novo arquivo** (tela do mock) |
 | `App.js` | delta em Rota A **ou** Rota B (ver §6) |
-| Login | nenhuma (já usa componentes — ver `GUIA_03B_REFATORACAO_COMPONENTES_TELA_1.md`, pasta `Tela 2`) |
+| Login | nenhuma (já usa componentes — ver [`GUIA_03B_REFATORACAO_COMPONENTES_TELA_1.md`](../Tela%202/GUIA_03B_REFATORACAO_COMPONENTES_TELA_1.md), pasta `Tela 2`) |
 
 ---
 
@@ -322,7 +322,7 @@ Validação na mesma ordem visual; primeira falha para (como na Tela 2).
 
 ### 6.1 Rota A (máquina de estados — sem dependência de navegação)
 
-**Passo 3 do guia 03** passou a renderizar a tela nova com o estado `cadastro2`. Recorte do `App.js` antes/depois:
+**Passo 3 do [guia 03](../Tela%202/GUIA_03_NAVEGACAO_EXPO.md)** passou a renderizar a tela nova com o estado `cadastro2`. Recorte do `App.js` antes/depois:
 
 Antes:
 ```tsx
@@ -413,6 +413,12 @@ Isso acontece se você usar `✓ Seus dados` como label fixo em vez de derivar d
 
 ## 9. Próximo passo: a tela para onde o usuário cai após login/cadastro
 
-Quando a tela estiver pronta, o fluxo se completa com **`GUIA_07_PAINEL_EXPO.md`** na pasta **`Tela 4`** — o Painel em estado vazio, mesma moldura de conteúdo da Home do Penpot (`home-psipront-mobile-variant.png`). Se ainda não estiver lá: a pasta `Tela 4` já traz a referência (`painel-vazio-mobile.png`) e o guia completo (AppScreen + SectionCard + EmptyHero).
+Quando a tela estiver pronta, o fluxo se completa com **[`GUIA_07_PAINEL_EXPO.md`](../Tela%204/GUIA_07_PAINEL_EXPO.md)** na pasta **`Tela 4`** — o Painel em estado vazio, mesma moldura de conteúdo da Home do Penpot (`home-psipront-mobile-variant.png`). Se ainda não estiver lá: a pasta `Tela 4` já traz a referência (`painel-vazio-mobile.png`) e o guia completo (AppScreen + SectionCard + EmptyHero).
 
 O painel abre após o login ou após concluir o cadastro ("Concluir e entrar  →"): Login → Cadastro 1 → Cadastro 2 → **Painel**.
+
+---
+
+| ◀ Anterior | Todos os guias | Próximo ▶ |
+| :--- | :---: | ---: |
+| [Guia 03 — Navegação entre telas](../Tela%202/GUIA_03_NAVEGACAO_EXPO.md) | [Índice](../README.md) | [Guia 07 — Painel (vazio)](../Tela%204/GUIA_07_PAINEL_EXPO.md) |

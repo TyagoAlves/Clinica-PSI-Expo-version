@@ -3,7 +3,7 @@
 **Projeto:** Clínica Psi — Prontuário para Psicólogos
 **Estado final:** `ESTADO_FINAL_COMPLETO.md` (raiz da pasta) — snapshot completo do app com todas as mudanças desta fase aplicadas
 **Imagem de referência:** `Serviços Mobile 360x760 (S21 FE).png`![Serviços Mobile](Serviços%20Mobile%20360x760%20(S21%20FE).png) (nesta mesma pasta)
-**Base:** `Tela 8` (`GUIA_12_AGENDA_EXPO.md` — tela Agenda, a última do fluxo pós-login). Mesma moldura, mesmo `AppToolbar` com ação à direita (⋮) e o mesmo padrão de drawer ligado à navegação (Rota A).
+**Base:** `Tela 8` ([`GUIA_12_AGENDA_EXPO.md`](../Tela%208/GUIA_12_AGENDA_EXPO.md) — tela Agenda, a última do fluxo pós-login). Mesma moldura, mesmo `AppToolbar` com ação à direita (⋮) e o mesmo padrão de drawer ligado à navegação (Rota A).
 **Objetivo desta fase:** implementar a tela **Serviços** exatamente como o mock: catálogo dos serviços oferecidos com busca funcional, filtro por status (chips), toggles para ativar/desativar inline, metadados por serviço (duração, preço, pacientes ativos) e acesso pelo menu lateral.
 
 ---
@@ -439,9 +439,15 @@ No `AppToolbar`, quando `searchDisabled` é `false`, o `TextInput` é controlado
 
 ## 7. Estado final / retrato consolidado
 
-- O snapshot completo do app (com esta tela, as 8 rotas e o drawer de 3 pontas ligado a `caminhos`) vive em **`ESTADO_FINAL_COMPLETO.md`** (raiz da pasta). Paste-order atualizado: `ServicosScreen` entra depois de `AgendaScreen` e `App.js` passa a ter 8 rotas.
+- O snapshot completo do app (com esta tela, as 8 rotas e o drawer de 3 pontas ligado a `caminhos`) vive em **[`ESTADO_FINAL_COMPLETO.md`](../ESTADO_FINAL_COMPLETO.md)** (raiz da pasta). Paste-order atualizado: `ServicosScreen` entra depois de `AgendaScreen` e `App.js` passa a ter 8 rotas.
 - O código de §4.1 é idêntico ao bloco `### 3.8 ServicosScreen.tsx` do retrato — se qualquer um divergir no futuro, o retrato é a verdade a reexportar (mesmo critério do GUIA_12).
 - As demais telas (`PainelScreen`, `PacientesScreen`, `AgendaScreen`, `App.js`) no retrato já trazem a união com `'servicos'` e o `onPress` — confira lá se algo parecer divergente.
 - Dependência de SVG **já instalada** desde o GUIA_12 (`react-native-svg`); nada novo a instalar no Expo Go.
 
 **Sequência da fase:** implementar §4.1 → aplicar §4.2–4.5 → testar §4.6 → checklist §5 → avisar no retrato (a linha do paste-order já está pronta).
+
+---
+
+| ◀ Anterior | Todos os guias | Próximo ▶ |
+| :--- | :---: | ---: |
+| [Guia 12 — Agenda](../Tela%208/GUIA_12_AGENDA_EXPO.md) | [Índice](../README.md) | [Guia 14 — Configurações](../Tela%2010/Guia%2014%20%28Configura%C3%A7%C3%B5es%29.md) |

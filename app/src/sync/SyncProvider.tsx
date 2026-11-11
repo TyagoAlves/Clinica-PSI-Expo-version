@@ -1,5 +1,5 @@
 // src/sync/SyncProvider.tsx
-// Estado de conexão com o servidor. Desde a migração para o Supabase o app é ONLINE:
+// Estado de conexão com o servidor. O app é ONLINE:
 // não há banco no aparelho nem fila de pendências. Este provider:
 //  - acompanha se há internet (NetInfo) e se a API respondeu;
 //  - busca a lista de profissionais da clínica;

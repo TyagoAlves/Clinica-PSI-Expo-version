@@ -13,15 +13,11 @@ const EnvSchema = z.object({
         .map((s) => s.trim())
         .filter(Boolean)
     ),
-  /** Connection string PostgreSQL do Supabase (Connect → Session pooler). Contém a senha: só no .env. */
-  DATABASE_URL: z
-    .string({ required_error: 'Defina DATABASE_URL no .env (Supabase → Connect → Session pooler).' })
-    .regex(/^postgres(ql)?:\/\//, 'DATABASE_URL precisa começar com postgresql://'),
+  DATABASE_PATH: z.string().default('clinica.db'),
   DATA_ENCRYPTION_KEY: z
     .string({ required_error: 'Defina DATA_ENCRYPTION_KEY no .env (gere com: npm run gen:key).' })
     .min(1, 'Defina DATA_ENCRYPTION_KEY no .env (gere com: npm run gen:key).'),
   DATA_ENCRYPTION_KEY_ID: z.string().default('v1'),
-  /** Chaves antigas só para decifrar: 'v1=base64;v0=base64'. */
   DATA_ENCRYPTION_OLD_KEYS: z.string().default(''),
   SESSION_TTL_DAYS: z.coerce.number().int().min(1).max(365).default(30),
   TRUST_PROXY: z
@@ -39,4 +35,4 @@ export function loadEnv(source: NodeJS.ProcessEnv = process.env): Env {
     throw new Error(`Variáveis de ambiente inválidas: ${issues}`);
   }
   return parsed.data;
-}
+}   

@@ -1,7 +1,7 @@
 import { randomBytes, randomUUID } from 'node:crypto';
 import request from 'supertest';
 import { describe, expect, it } from 'vitest';
-import { createPostgresRepositories } from '../src/repositories/postgres.js';
+import { createSqliteRepositories } from '../src/repositories/sqlite.js';
 import { createFieldCipher } from '../src/security/fieldCipher.js';
 import { auth, makeApp, one, patientChange, signUp } from './helpers.js';
 
@@ -187,7 +187,7 @@ describe('rotação de chave', () => {
 
     const newKey = randomBytes(32);
     const rotated = createFieldCipher(newKey, 'v2', new Map([['v1', oldKey]]));
-    const repos = createPostgresRepositories(db, rotated);
+    const repos = createSqliteRepositories(db, rotated);
     const before = (await repos.patients.list(clinicId, { limit: 10, offset: 0 })).items[0]!;
     expect(before.complaint).toBe('Insônia'); // decifra com a chave antiga
 
@@ -197,7 +197,7 @@ describe('rotação de chave', () => {
     expect(row.complaint_enc).toMatch(/^v2:/);
 
     // Chave antiga descartada: só com a nova ainda lê tudo.
-    const onlyNew = createPostgresRepositories(db, createFieldCipher(newKey, 'v2'));
+    const onlyNew = createSqliteRepositories(db, createFieldCipher(newKey, 'v2'));
     expect((await onlyNew.patients.list(clinicId, { limit: 10, offset: 0 })).items[0]!.complaint).toBe('Insônia');
   });
 });

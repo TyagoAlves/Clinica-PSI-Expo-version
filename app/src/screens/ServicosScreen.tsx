@@ -1,7 +1,7 @@
 // src/screens/ServicosScreen.tsx
 // Tela 9 (GUIA_13, Tyago) — catálogo de serviços da clínica.
 // Visual do mock (cards com ícone, toggle verde, meta de duração/preço/pacientes e ⋮), agora com
-// dados reais: catálogo salvo na API (Supabase), contagem de pacientes ativos por serviço,
+// dados reais: catálogo salvo na API, contagem de pacientes ativos por serviço,
 // toggle que ativa/desativa de verdade e cadastro/edição/exclusão.
 import { useMemo, useState } from 'react';
 import { Alert, Switch, Text, TouchableOpacity, View, StyleSheet } from 'react-native';

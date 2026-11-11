@@ -1,4 +1,4 @@
-O Guia 14 (**Configurações**) segue exatamente o mesmo padrão arquitetural e de design das telas anteriores (como Agenda e Serviços), utilizando os componentes compartilhados do projeto (como `AppScreen`, `AppToolbar` e `AppDrawer`).
+O Guia 14 (**Configurações**) segue exatamente o mesmo padrão arquitetural e de design das telas anteriores (como [Agenda](../Tela%208/GUIA_12_AGENDA_EXPO.md) e [Serviços](../Tela%209/GUIA_13_SERVICOS_EXPO.md)), utilizando os componentes compartilhados do projeto (como `AppScreen`, `AppToolbar` e `AppDrawer`).
 
 **Imagem de referência:** `configuracoes-mobile.png`![Configuracoes Mobile](configuracoes-mobile.png) (nesta mesma pasta)
 
@@ -259,3 +259,9 @@ import ConfiguracoesScreen from './src/screens/ConfiguracoesScreen';
   conteudo = <ConfiguracoesScreen onNavegar={go} />;
 
 ```
+
+---
+
+| ◀ Anterior | Todos os guias | Próximo ▶ |
+| :--- | :---: | ---: |
+| [Guia 13 — Serviços](../Tela%209/GUIA_13_SERVICOS_EXPO.md) | [Índice](../README.md) | [Guia 15 — SQLite na API](../Fase%20SQLite/GUIA_15_BANCO_SQLITE_API.md) |

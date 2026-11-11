@@ -4,7 +4,7 @@ export default defineConfig({
   test: {
     include: ['test/**/*.test.ts'],
     environment: 'node',
-    // O PGlite (PostgreSQL em WASM) leva alguns segundos para iniciar em máquina carregada.
+    // Banco SQLite em memória — rápido, mas mantemos margem em máquina carregada.
     testTimeout: 20_000,
     hookTimeout: 30_000,
   },

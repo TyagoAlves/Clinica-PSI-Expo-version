@@ -1,5 +1,5 @@
 // src/database/repositories/ApiTableRepo.ts
-// Repositório "online": lê e grava direto na API (que persiste no Supabase/PostgreSQL).
+// Repositório "online": lê e grava direto na API (que persiste em SQLite).
 // Implementa a mesma interface do antigo repositório SQLite local, então as telas não mudam.
 // Não há banco no aparelho: sem internet, as operações falham com "Sem conexão com o servidor".
 import { apiRequest } from '../../services/api';

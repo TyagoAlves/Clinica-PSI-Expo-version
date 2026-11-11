@@ -1,6 +1,8 @@
-// Implementação PostgreSQL (Supabase) dos repositórios.
+// Implementação SQLite dos repositórios (via adaptador Db de src/db/sqlite.ts).
+// O SQL é escrito num dialeto "postgres-compatível" ($1, ILIKE, ::cast, RETURNING)
+// e o adaptador traduz para SQLite — assim o mesmo código serve para os dois bancos.
 import { randomUUID } from 'node:crypto';
-import type { Db, Row } from '../db/connection.js';
+import type { Db, Row } from '../db/types.js';
 import type {
   Appointment,
   AuditEntry,
@@ -68,7 +70,7 @@ class Params {
 }
 
 // ---------------------------------------------------------------- usuários
-class PgUserRepository implements IUserRepository {
+class SqliteUserRepository implements IUserRepository {
   constructor(private readonly db: Db) {}
 
   async create(data: NewUser): Promise<User> {
@@ -138,7 +140,7 @@ const CLINIC_COLUMNS: Record<keyof NewClinic, string> = {
   acronym: 'acronym',
 };
 
-class PgClinicRepository implements IClinicRepository {
+class SqliteClinicRepository implements IClinicRepository {
   constructor(private readonly db: Db) {}
 
   async create(data: NewClinic, ownerUserId: string): Promise<Clinic> {
@@ -202,7 +204,7 @@ class PgClinicRepository implements IClinicRepository {
 }
 
 // ---------------------------------------------------------------- sessões
-class PgSessionRepository implements ISessionRepository {
+class SqliteSessionRepository implements ISessionRepository {
   constructor(private readonly db: Db) {}
 
   async create(tokenHash: string, userId: string, expiresAt: string): Promise<void> {
@@ -325,7 +327,7 @@ const APPOINTMENTS: EntityDef = {
   ],
 };
 
-class PgSyncRepository<T extends SyncRecord> implements ISyncRepository<T> {
+class SqliteSyncRepository<T extends SyncRecord> implements ISyncRepository<T> {
   private readonly cols: Column[];
   private readonly byKey: Map<string, Column>;
 
@@ -448,7 +450,7 @@ class PgSyncRepository<T extends SyncRecord> implements ISyncRepository<T> {
 }
 
 // ---------------------------------------------------------------- auditoria
-class PgAuditRepository implements IAuditRepository {
+class SqliteAuditRepository implements IAuditRepository {
   constructor(private readonly db: Db) {}
 
   async record(e: Omit<AuditEntry, 'id' | 'at'>): Promise<void> {
@@ -484,7 +486,7 @@ class PgAuditRepository implements IAuditRepository {
   }
 }
 
-class PgMetaRepository implements IMetaRepository {
+class SqliteMetaRepository implements IMetaRepository {
   constructor(private readonly db: Db) {}
   async currentRev(): Promise<number> {
     const [r] = await this.db.query<{ value: number }>("SELECT value FROM meta WHERE key = 'rev'");
@@ -492,16 +494,16 @@ class PgMetaRepository implements IMetaRepository {
   }
 }
 
-export function createPostgresRepositories(db: Db, cipher: FieldCipher): Repositories {
+export function createSqliteRepositories(db: Db, cipher: FieldCipher): Repositories {
   return {
-    users: new PgUserRepository(db),
-    clinics: new PgClinicRepository(db),
-    sessions: new PgSessionRepository(db),
-    patients: new PgSyncRepository<Patient>(db, cipher, PATIENTS),
-    services: new PgSyncRepository<Service>(db, cipher, SERVICES),
-    evolutions: new PgSyncRepository<Evolution>(db, cipher, EVOLUTIONS),
-    appointments: new PgSyncRepository<Appointment>(db, cipher, APPOINTMENTS),
-    audit: new PgAuditRepository(db),
-    meta: new PgMetaRepository(db),
+    users: new SqliteUserRepository(db),
+    clinics: new SqliteClinicRepository(db),
+    sessions: new SqliteSessionRepository(db),
+    patients: new SqliteSyncRepository<Patient>(db, cipher, PATIENTS),
+    services: new SqliteSyncRepository<Service>(db, cipher, SERVICES),
+    evolutions: new SqliteSyncRepository<Evolution>(db, cipher, EVOLUTIONS),
+    appointments: new SqliteSyncRepository<Appointment>(db, cipher, APPOINTMENTS),
+    audit: new SqliteAuditRepository(db),
+    meta: new SqliteMetaRepository(db),
   };
 }

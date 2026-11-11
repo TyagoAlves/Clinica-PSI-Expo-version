@@ -2,32 +2,32 @@ import { randomBytes, randomUUID } from 'node:crypto';
 import type { Express } from 'express';
 import request from 'supertest';
 import { createApp } from '../src/app.js';
-import type { Db } from '../src/db/connection.js';
-import { createPostgresRepositories } from '../src/repositories/postgres.js';
+import type { Db } from '../src/db/types.js';
+import { createSqliteRepositories } from '../src/repositories/sqlite.js';
 import { LoginRateLimiter } from '../src/security/loginRateLimiter.js';
 import { createFieldCipher, type FieldCipher } from '../src/security/fieldCipher.js';
-import { createPgliteDb, resetDb } from './pgliteDb.js';
+import { createTestDb, resetDb } from './db.js';
 
 export interface TestCtx {
   app: Express;
   db: Db;
 }
 
-// Um PostgreSQL (PGlite) por arquivo de teste, zerado a cada makeApp().
+// Um banco SQLite em memória por arquivo de teste, zerado a cada makeApp().
 let shared: Promise<Db> | null = null;
 export async function testDb(): Promise<Db> {
-  shared ??= createPgliteDb();
+  shared ??= createTestDb();
   const db = await shared;
   await resetDb(db);
   return db;
 }
 
-/** App com banco PostgreSQL em memória e chave aleatória — cada teste começa limpo. */
+/** App com banco SQLite em memória e chave aleatória — cada teste começa limpo. */
 export async function makeApp(
   opts: { limiter?: LoginRateLimiter; cipher?: FieldCipher; syncPageSize?: number } = {}
 ): Promise<TestCtx> {
   const db = await testDb();
-  const repos = createPostgresRepositories(db, opts.cipher ?? createFieldCipher(randomBytes(32)));
+  const repos = createSqliteRepositories(db, opts.cipher ?? createFieldCipher(randomBytes(32)));
   return {
     app: createApp({
       repos,

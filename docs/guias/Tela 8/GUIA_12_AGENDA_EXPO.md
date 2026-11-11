@@ -183,7 +183,7 @@ const styles = StyleSheet.create({
 
 ## 3. A tela nova — `src/screens/AgendaScreen.tsx`
 
-> **Este é o arquivo FINAL e completo da tela, com a navegação do Drawer já ligada** (padrão do `GUIA_11`). Cole inteiro — nada para editar à mão.
+> **Este é o arquivo FINAL e completo da tela, com a navegação do Drawer já ligada** (padrão do [`GUIA_11`](../Tela%207/GUIA_11_PACIENTES_VAZIO_EXPO.md)). Cole inteiro — nada para editar à mão.
 
 ```tsx
 // src/screens/AgendaScreen.tsx
@@ -579,8 +579,8 @@ const drawerItems: DrawerItem[] = useMemo(
 
 Dois detalhes que ficaram pendentes nesta fase e foram fechados depois:
 
-1. **O botão `Abrir agenda` do Painel agora navega de verdade.** No GUIA_07 ele disparava `emBreve` (a Agenda ainda não existia). O estado final (`ESTADO_FINAL_COMPLETO.md` §3.4) tem `onActionPress={() => onNavegar('agenda')}` no `SectionCard "Sessões de hoje"` — o mesmo padrão dos itens do drawer.
-2. **O item `Serviços`** do drawer (`medkit-outline`) ganhou `onPress` e rota própria no GUIA_13 — ver `GUIA_13_SERVICOS_EXPO.md` e `ESTADO_FINAL_COMPLETO.md` §3.7/§3.8. Até lá ele era decorativo nas três telas.
+1. **O botão `Abrir agenda` do Painel agora navega de verdade.** No GUIA_07 ele disparava `emBreve` (a Agenda ainda não existia). O estado final ([`ESTADO_FINAL_COMPLETO.md`](../ESTADO_FINAL_COMPLETO.md) §3.4) tem `onActionPress={() => onNavegar('agenda')}` no `SectionCard "Sessões de hoje"` — o mesmo padrão dos itens do drawer.
+2. **O item `Serviços`** do drawer (`medkit-outline`) ganhou `onPress` e rota própria no GUIA_13 — ver [`GUIA_13_SERVICOS_EXPO.md`](../Tela%209/GUIA_13_SERVICOS_EXPO.md) e [`ESTADO_FINAL_COMPLETO.md`](../ESTADO_FINAL_COMPLETO.md) §3.7/§3.8. Até lá ele era decorativo nas três telas.
 
 ---
 
@@ -643,4 +643,10 @@ Dois detalhes que ficaram pendentes nesta fase e foram fechados depois:
 
 ## 9. Retrato consolidado
 
-O estado final do app está sincronizado em **`ESTADO_FINAL_COMPLETO.md`** (raiz da pasta): `§2.14 AppToolbar` (com o botão `⋮` opcional), `§3.6 AgendaScreen` (este código), `§3.7 App.js` (com a rota `agenda`) e as telas `§3.4`/`§3.5`/`§3.6` com os itens `agenda` e `servicos` ligados nos drawers, e `§3.8 ServicosScreen` com rota própria. Quem for trazer o app para o Snack/projeto local do zero, segue a ordem de criação de lá.
+O estado final do app está sincronizado em **[`ESTADO_FINAL_COMPLETO.md`](../ESTADO_FINAL_COMPLETO.md)** (raiz da pasta): `§2.14 AppToolbar` (com o botão `⋮` opcional), `§3.6 AgendaScreen` (este código), `§3.7 App.js` (com a rota `agenda`) e as telas `§3.4`/`§3.5`/`§3.6` com os itens `agenda` e `servicos` ligados nos drawers, e `§3.8 ServicosScreen` com rota própria. Quem for trazer o app para o Snack/projeto local do zero, segue a ordem de criação de lá.
+
+---
+
+| ◀ Anterior | Todos os guias | Próximo ▶ |
+| :--- | :---: | ---: |
+| [Guia 11 — Pacientes (lista vazia)](../Tela%207/GUIA_11_PACIENTES_VAZIO_EXPO.md) | [Índice](../README.md) | [Guia 13 — Serviços](../Tela%209/GUIA_13_SERVICOS_EXPO.md) |

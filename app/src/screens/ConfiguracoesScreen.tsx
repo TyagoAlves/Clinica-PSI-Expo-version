@@ -153,7 +153,7 @@ export default function ConfiguracoesScreen() {
       key: 'sobre',
       section: 'SOBRE',
       title: 'Sobre o sistema',
-      subtitle: `Versão ${APP_VERSION} · Dados no servidor (Supabase)`,
+      subtitle: `Versão ${APP_VERSION} · Dados no servidor (SQLite)`,
       icon: 'information-circle-outline',
       onPress: sobre,
     },
@@ -219,7 +219,7 @@ export default function ConfiguracoesScreen() {
       })}
       {visiveis.length === 0 ? <Text style={styles.empty}>Nada encontrado para “{search.trim()}”.</Text> : null}
 
-      <Text style={styles.footerNote}>Seus dados ficam no servidor seguro da clínica (Supabase), com criptografia.</Text>
+      <Text style={styles.footerNote}>Seus dados ficam no servidor seguro da clínica (SQLite), com criptografia.</Text>
 
       <AppMenu visible={drawerOpen} onClose={() => setDrawerOpen(false)} active="configuracoes" />
       <ClinicaModal visible={clinicaOpen} onClose={() => setClinicaOpen(false)} clinic={clinic} onSave={updateClinic} />

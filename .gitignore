@@ -4,9 +4,11 @@ dist/
 web-build/
 .expo/
 
-# Segredos e dados locais da API (NUNCA commitar)
+# Segredos e dados locais (NUNCA commitar)
 .env
-api/data/
+api/clinica.db
+api/clinica.db-wal
+api/clinica.db-shm
 
 # Sistema / logs
 *.log
@@ -15,6 +17,3 @@ Thumbs.db
 
 # Saídas temporárias da automação do emulador
 docs/screenshots/*.xml
-
-# Protótipo antigo do Tyago: repositório próprio, mantido aqui só como referência
-Clinica-PSI-Expo-version/

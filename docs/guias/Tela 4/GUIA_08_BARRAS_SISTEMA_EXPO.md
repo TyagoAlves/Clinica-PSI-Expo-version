@@ -446,3 +446,9 @@ Componente `<NavigationBar />` é declarativo e aceita `style={'auto' | 'light' 
 ## 10. Conclusão técnica
 
 `SafeAreaProvider` + `SafeAreaView` é a API recomendada pela Expo para todas as telas mobiliares — foi criada justamente com o seu cenário em mente (phone com notch/dynamic island/home bar), e está implementada tanto no Expo Go quanto no binário final. Para a sua família de telas (Login → Cadastro → Painel), o custo é editar 2 arquivos (`AuthScreen.tsx`, `AppScreen.tsx`) e o `App.js`. Para a sua família de testes, o ganho é o fluxo inteiro ficar alinhado a qualquer dispositivo real com menos esforço visual.
+
+---
+
+| ◀ Anterior | Todos os guias | Próximo ▶ |
+| :--- | :---: | ---: |
+| [Guia 07 — Painel (vazio)](GUIA_07_PAINEL_EXPO.md) | [Índice](../README.md) | [Guia 09 — Novo Paciente (modal)](../Tela%205/GUIA_09_NOVO_PACIENTE_EXPO.md) |

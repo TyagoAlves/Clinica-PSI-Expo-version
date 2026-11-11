@@ -29,7 +29,7 @@
 
 ## 1. ⚠️ O que mudou em relação ao plano original
 
-O plano original estava nos guias (hoje em `docs/guias/`, GUIA_01 a GUIA_10) e no código dos
+O plano original estava nos guias (hoje em [`docs/guias/`](guias/), GUIA_01 a GUIA_10) e no código dos
 dois repositórios. Abaixo, **tudo o que foi feito diferente do que estava acordado ali** — em ordem de impacto.
 
 ### 1.1 🔴 Os dados dos pacientes agora saem do celular e vão para um servidor

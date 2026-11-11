@@ -283,7 +283,7 @@ O React Native não deixa `animationType="slide"` vir da esquerda — o padrão 
 
 > Se quiser a animação mais rápida/lenta, mexa só nos `duration` dentro de `useEffect`. O `useNativeDriver: true` garante 60fps sem bloquear a JS thread.
 
-> **Por que `useSafeAreaInsets` está embutido aqui**: o rodapé do drawer toca no mesmo canto inferior da tela que o rodapé do `NovoPacienteModal`; o mesmo princípio se aplica. O provider (`<SafeAreaProvider>`) precisa estar na raiz do app — veja o `App.js` atualizado no **Guia 08**.
+> **Por que `useSafeAreaInsets` está embutido aqui**: o rodapé do drawer toca no mesmo canto inferior da tela que o rodapé do `NovoPacienteModal`; o mesmo princípio se aplica. O provider (`<SafeAreaProvider>`) precisa estar na raiz do app — veja o `App.js` atualizado no **[Guia 08](../Tela%204/GUIA_08_BARRAS_SISTEMA_EXPO.md)**.
 >
 > **Reutilização dos mesmos ícones do app web** (Gride — Ícones Fa): `grid-outline`, `people-outline`, `calendar-outline`, `medkit-outline`, `settings-outline`. Se quiser glyph de uma família específica (ex.: `shield-outline` para LGPD), basta trocar pelo nome do Ionicons correspondente; o componente continua igual.
 
@@ -362,7 +362,7 @@ Troque a ação do `☰` — desta fase em diante ele apenas abre o drawer (a ba
 
 ### 4.1 `src/screens/PainelScreen.tsx` — arquivo completo (para quem vai substituir o arquivo inteiro)
 
-> **Versão após o GUIA_10** (drawer ligado, mas sem navegação via `onNavegar`). A versão **definitiva** — com o item `Pacientes` do menu trocando de tela — está em `ESTADO_FINAL_COMPLETO.md` §3.4 e no `GUIA_11` (§3 + §5.3). Se for substituir o arquivo inteiro agora, prefira a definitiva.
+> **Versão após o GUIA_10** (drawer ligado, mas sem navegação via `onNavegar`). A versão **definitiva** — com o item `Pacientes` do menu trocando de tela — está em [`ESTADO_FINAL_COMPLETO.md`](../ESTADO_FINAL_COMPLETO.md) §3.4 e no [`GUIA_11`](../Tela%207/GUIA_11_PACIENTES_VAZIO_EXPO.md) (§3 + §5.3). Se for substituir o arquivo inteiro agora, prefira a definitiva.
 
 Se você prefere copiar o arquivo inteiro do PainelScreen de uma vez, aqui está o arquivo com tudo que os Guias 07/09/10 já haviam adicionado **e** com o `AppDrawer` integrado — substituição segura (as explicações seguem em §4.0):
 
@@ -464,7 +464,7 @@ const styles = StyleSheet.create({
 });
 ```
 
-> Este arquivo substitui a versão mais recente do `PainelScreen.tsx` (Tela 5 / GUIA_09 §4.4), **acrescentando** somente as 3 linhas do drawer: o import, o `useState` `drawerOpen`, o `onPress={() => setDrawerOpen(true)}` no botão `☰` e a troca do `onMenuPress` na `<AppToolbar>` (de Alert para `setDrawerOpen(true)`) e a renderização `<AppDrawer … />` na raiz. Todo o resto (toolbar via componente, headerRow, hero vazio, os 3 `SectionCard`, `NovoPacienteModal`) permanece idêntico ao arquivo anterior — nenhum texto ou explicação de passos foi alterado.
+> Este arquivo substitui a versão mais recente do `PainelScreen.tsx` (Tela 5 / [GUIA_09](../Tela%205/GUIA_09_NOVO_PACIENTE_EXPO.md) §4.4), **acrescentando** somente as 3 linhas do drawer: o import, o `useState` `drawerOpen`, o `onPress={() => setDrawerOpen(true)}` no botão `☰` e a troca do `onMenuPress` na `<AppToolbar>` (de Alert para `setDrawerOpen(true)`) e a renderização `<AppDrawer … />` na raiz. Todo o resto (toolbar via componente, headerRow, hero vazio, os 3 `SectionCard`, `NovoPacienteModal`) permanece idêntico ao arquivo anterior — nenhum texto ou explicação de passos foi alterado.
 
 ---
 
@@ -520,7 +520,7 @@ Esta é literalmente a lista de navegação da tela `☰` da web — basta troca
 - **Drawer fecha ao tocar em qualquer item, mas o conteúdo muda?** → nesta fase não troca de tela; só fecha. Para navegação real, ver §5
 - **Área clicável fora não fecha (mesmo clicando no cantinho escuro)** → o `absoluteFill` está cobrindo o conteúdo — a `StyleSheet.absoluteFill` tem que ser irmã direta do `<View style={absoluteFill}>` (irmã do panel), não aninhada
 - **Rodapé não respeita o 3-botão** → você provavelmente esqueceu de adicionar `paddingBottom: Math.max(18, insets.bottom + 12)` no `styles.panel` — mesmo padrão que o rodapé do `NovoPacienteModal`
-- **"`useSafeAreaInsets` retorna zero"** → o `SafeAreaProvider` precisa estar na raiz do app (`App.js`); caso contrário, `useSafeAreaInsets()` devolve 0/0/0/0 — confirme se passou pela fase de barras de sistema (`Tela 4/GUIA_08_BARRAS_SISTEMA_EXPO.md`)
+- **"`useSafeAreaInsets` retorna zero"** → o `SafeAreaProvider` precisa estar na raiz do app (`App.js`); caso contrário, `useSafeAreaInsets()` devolve 0/0/0/0 — confirme se passou pela fase de barras de sistema ([`Tela 4/GUIA_08_BARRAS_SISTEMA_EXPO.md`](../Tela%204/GUIA_08_BARRAS_SISTEMA_EXPO.md))
 - **O backdrop cobre só a metade da tela** → confirme que o `Modal` tem `animationType="none"` (não `slide`/`fade`, que limitariam a animação) e que o `View` interno usa `StyleSheet.absoluteFill` como irmão direto do panel
 
 ### React Hook `useEffect` has missing dependencies: `fade`, `mounted`, and `translateX`
@@ -536,7 +536,7 @@ Esta é literalmente a lista de navegação da tela `☰` da web — basta troca
 
 ## 8. O que ainda NÃO entra aqui
 
-- Navegação por item (`navigate`, `replace`, `navigateWithDebounce`) — entra quando usarmos a Rota B (`GUIA_03_NAVEGACAO_EXPO.md`)
+- Navegação por item (`navigate`, `replace`, `navigateWithDebounce`) — entra quando usarmos a Rota B ([`GUIA_03_NAVEGACAO_EXPO.md`](../Tela%202/GUIA_03_NAVEGACAO_EXPO.md))
 - Gesture swipe-to-open — não está no mock, e adiciona complexidade (hooks de gesture) sem benefício para este momento
 - `theme.js` — nenhuma mudança; o drawer usa as cores diretamente (`#0F172A`, `#4F46E5`) para preservar exatamente a identidade visual do menu
 - Haptic feedback ao abrir — local opcional; não está no mock
@@ -545,4 +545,10 @@ Esta é literalmente a lista de navegação da tela `☰` da web — basta troca
 
 ## 9. Próximo passo
 
-- Passe para a **Tela 7** (`Pacientes` lista, já no mock novo) ou ligue a **navegação** (GUIA_03) para que os itens do Drawer cheguem a algum lugar. Uma boa sequência: Tela 7 (lista) → Tela 8 (detalhe do paciente) → navegação — assim você fecha o ciclo `☰` → `Painel` → lista de pacientes → detalhe do paciente sem voltar.
+- Passe para a **Tela 7** (`Pacientes` lista, já no mock novo) ou ligue a **navegação** ([GUIA_03](../Tela%202/GUIA_03_NAVEGACAO_EXPO.md)) para que os itens do Drawer cheguem a algum lugar. Uma boa sequência: Tela 7 (lista) → Tela 8 (detalhe do paciente) → navegação — assim você fecha o ciclo `☰` → `Painel` → lista de pacientes → detalhe do paciente sem voltar.
+
+---
+
+| ◀ Anterior | Todos os guias | Próximo ▶ |
+| :--- | :---: | ---: |
+| [Guia 09 — Novo Paciente (modal)](../Tela%205/GUIA_09_NOVO_PACIENTE_EXPO.md) | [Índice](../README.md) | [Guia 11 — Pacientes (lista vazia)](../Tela%207/GUIA_11_PACIENTES_VAZIO_EXPO.md) |

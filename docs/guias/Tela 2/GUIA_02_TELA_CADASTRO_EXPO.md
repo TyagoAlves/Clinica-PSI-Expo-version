@@ -835,13 +835,13 @@ Token de regra: **Login usa os mesmos componentes; nada de variação ad-hoc par
 3. Tela 3: `CadastroPasso2Screen` (Dados da clínica — mesma base, `Stepper active={1}`)
 4. Navegação simples com expo-router (`/login`, `/cadastro-passos`, `/painel`)
 5. Auth local (espelho do web app: PBKDF2, sessão, homologação)
-6. **Tela 4: Painel vazio** (`GUIA_07_PAINEL_EXPO.md`, pasta `Tela 4`) — sem ela o fluxo login→cadastro→Painel não se fecha
+6. **Tela 4: Painel vazio** ([`GUIA_07_PAINEL_EXPO.md`](../Tela%204/GUIA_07_PAINEL_EXPO.md), pasta `Tela 4`) — sem ela o fluxo login→cadastro→Painel não se fecha
 
 ---
 
 ## 12. Erros comuns ao implementar os componentes novos
 
-Fluxos de referência entre as telas desta fase: Login → Cadastro 1 → Cadastro 2 → **Painel** (GUIA_07).
+Fluxos de referência entre as telas desta fase: Login → Cadastro 1 → Cadastro 2 → **Painel** ([GUIA_07](../Tela%204/GUIA_07_PAINEL_EXPO.md)).
 Erros frequentes nesta etapa:
 
 - **Esqueceu o `default` export** em um componente → erro `Element type is invalid` no import
@@ -921,3 +921,9 @@ O que teria de mudar e o porquê de cada mudança:
 - [ ] CI/cd passando com a nova stack
 
 **Resumo em 3 linhas**: `App.tsx` e `App.js` são o mesmo entry para dois templates (TS vs JS); a diferença é cosmética e reversível. RN puro muda a **cadeia inteira** — quem compila o binário, como ícones e navegação se linkam e como o app roda no device. Não use RN puro agora.
+
+---
+
+| ◀ Anterior | Todos os guias | Próximo ▶ |
+| :--- | :---: | ---: |
+| [Guia 01 — Tela de Login](../Tela%201/GUIA_01_TELA_LOGIN_EXPO.md) | [Índice](../README.md) | [Guia 03B — Refatoração do Login](GUIA_03B_REFATORACAO_COMPONENTES_TELA_1.md) |

@@ -6,14 +6,16 @@
 //   3. npm run rotate-key                   -> re-cifra tudo com a chave nova (API pode ficar no ar)
 //   4. confirme "0 restantes" e então remova a chave antiga de DATA_ENCRYPTION_OLD_KEYS
 import { loadEnv } from '../src/config/env.js';
-import { createPostgresDb, openDatabase } from '../src/db/connection.js';
-import { createPostgresRepositories } from '../src/repositories/postgres.js';
+import { migrate } from '../src/db/migrations.js';
+import { createSqliteDb } from '../src/db/sqlite.js';
+import { createSqliteRepositories } from '../src/repositories/sqlite.js';
 import { createFieldCipher, parseKey, parseOldKeys } from '../src/security/fieldCipher.js';
 
 const env = loadEnv();
 const cipher = createFieldCipher(parseKey(env.DATA_ENCRYPTION_KEY), env.DATA_ENCRYPTION_KEY_ID, parseOldKeys(env.DATA_ENCRYPTION_OLD_KEYS));
-const db = await openDatabase(createPostgresDb(env.DATABASE_URL));
-const repos = createPostgresRepositories(db, cipher);
+const db = createSqliteDb(env.DATABASE_PATH);
+await migrate(db);
+const repos = createSqliteRepositories(db, cipher);
 
 console.log(`Re-cifrando com a chave "${cipher.currentKeyId}"...`);
 for (const [name, repo] of [

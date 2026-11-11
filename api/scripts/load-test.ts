@@ -6,8 +6,8 @@ import { randomBytes, randomUUID } from 'node:crypto';
 import type { AddressInfo } from 'node:net';
 import autocannon from 'autocannon';
 import { createApp } from '../src/app.js';
-import { createPostgresRepositories } from '../src/repositories/postgres.js';
-import { createPgliteDb } from '../test/pgliteDb.js';
+import { createSqliteRepositories } from '../src/repositories/sqlite.js';
+import { createTestDb } from '../test/db.js';
 import { createFieldCipher } from '../src/security/fieldCipher.js';
 
 const arg = (name: string, def: number) => {
@@ -17,9 +17,9 @@ const arg = (name: string, def: number) => {
 const connections = arg('connections', 20);
 const duration = arg('duration', 10);
 
-// PostgreSQL embutido (PGlite): não toca no banco do Supabase.
-const db = await createPgliteDb();
-const app = createApp({ repos: createPostgresRepositories(db, createFieldCipher(randomBytes(32))), logRequests: false });
+// SQLite em memória: não toca no banco clinica.db.
+const db = await createTestDb();
+const app = createApp({ repos: createSqliteRepositories(db, createFieldCipher(randomBytes(32))), logRequests: false });
 const server = app.listen(0, '127.0.0.1');
 await new Promise((r) => server.once('listening', r));
 const base = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;

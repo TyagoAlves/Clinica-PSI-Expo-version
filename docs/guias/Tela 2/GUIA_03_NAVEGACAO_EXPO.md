@@ -163,7 +163,7 @@ export default function LoginScreen({ onCadastrar, onEntrar }: Props) {
 }
 ```
 
-> **Se você já aplicou o GUIA_03B**, suas props já são **opcionais com default `= {}`** — mantenha como estão; a navegação/pai sempre passa o callback de qualquer forma. Obrigatório × opcional não muda a execução aqui.
+> **Se você já aplicou o [GUIA_03B](GUIA_03B_REFATORACAO_COMPONENTES_TELA_1.md)**, suas props já são **opcionais com default `= {}`** — mantenha como estão; a navegação/pai sempre passa o callback de qualquer forma. Obrigatório × opcional não muda a execução aqui.
 
 ### CadastroPasso1Screen
 ```tsx
@@ -180,7 +180,7 @@ export default function CadastroPasso1Screen({ onVoltar, onContinuar }: Props) {
 
 ## 3.3 CadastroPasso2Screen (provisória para o teste)
 
-Crie um stub `src/screens/CadastroPasso2Screen.tsx` idêntico à estrutura do CadastroPasso1Screen, só com título `Complete os dados da clínica` e `TextButton` de voltar → `onVoltar()`. Quando chegar a hora do Guia 04, ele vira o real (mesmas peças: `AuthScreen/FormField/PrimaryButton/Stepper active={1}`).
+Crie um stub `src/screens/CadastroPasso2Screen.tsx` idêntico à estrutura do CadastroPasso1Screen, só com título `Complete os dados da clínica` e `TextButton` de voltar → `onVoltar()`. Quando chegar a hora do [Guia 04](../Tela%203/GUIA_04_TELA_CADASTRO_PASSO2_EXPO.md), ele vira o real (mesmas peças: `AuthScreen/FormField/PrimaryButton/Stepper active={1}`).
 
 ## 3.4 Limites da Rota A (seja honesto)
 
@@ -386,4 +386,10 @@ Ficar com uma única fonte elimina o erro #1 de navegação (`'Cadastro2'` com t
 - Expo Router (alternativa file-based, `app/_layout.tsx`; escolha quando as rotas passarem de ~6-7 telas)
 - Compartilhamento de estado entre telas (Zustand/Context ainda não montados)
 
-**Próximo guia (04) — Auth local**: PBKDF2 + AsyncStorage + guardas de rota + "Entrar"/"Sair" de verdade, espelhando o web app.
+**Próximo guia ([04](../Tela%203/GUIA_04_TELA_CADASTRO_PASSO2_EXPO.md)) — Auth local**: PBKDF2 + AsyncStorage + guardas de rota + "Entrar"/"Sair" de verdade, espelhando o web app.
+
+---
+
+| ◀ Anterior | Todos os guias | Próximo ▶ |
+| :--- | :---: | ---: |
+| [Guia 03B — Refatoração do Login](GUIA_03B_REFATORACAO_COMPONENTES_TELA_1.md) | [Índice](../README.md) | [Guia 04 — Cadastro (Passo 2)](../Tela%203/GUIA_04_TELA_CADASTRO_PASSO2_EXPO.md) |

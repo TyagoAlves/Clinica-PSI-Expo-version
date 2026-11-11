@@ -4,3 +4,8 @@ dist/
 coverage/
 *.log
 data/
+
+# Banco SQLite local (dados de dev, nunca commitar)
+clinica.db
+clinica.db-wal
+clinica.db-shm

@@ -50,7 +50,7 @@ Atualizado em 10/11/2026. Ambiente: ver `docs/DEV-SETUP.md`. Contrato da API: `a
 - [ ] **Tyago validar** as partes feitas sem mock: lista de sessões e modal da Agenda, modal de Serviço, textos de Configurações (ver `MUDANCAS.md` §11.3).
 - [ ] Telas ainda sem mock: Aparência, Termos e privacidade (modelos LGPD), visão semanal da Agenda.
 - [ ] Decidir upgrade Expo SDK 52 → 55 (a branch do Tyago está no 55; o `app/` ficou no 52).
-- [ ] Migrar navegação para a Rota B (React Navigation) quando as telas acima entrarem (GUIA_03).
+- [ ] Migrar navegação para a Rota B (React Navigation) quando as telas acima entrarem ([GUIA_03](guias/Tela%202/GUIA_03_NAVEGACAO_EXPO.md)).
 - [ ] Máscaras de telefone/CPF/data e seletor de data nativo no modal.
 - [ ] Testes de usabilidade com o cliente (roteiro: cadastro, novo paciente offline, sincronização).
 - [ ] Testes automatizados do app (Jest + @testing-library/react-native para `SyncProvider` e telas).

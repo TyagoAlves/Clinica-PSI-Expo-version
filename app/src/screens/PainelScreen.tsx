@@ -1,5 +1,5 @@
 // src/screens/PainelScreen.tsx
-// Painel: lê os dados da API (Supabase) e mostra o estado da conexão.
+// Painel: lê os dados da API e mostra o estado da conexão.
 import { useState, useMemo } from 'react';
 import { Alert, View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
 import { colors } from '../theme';

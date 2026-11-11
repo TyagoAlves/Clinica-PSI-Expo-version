@@ -5,7 +5,7 @@
 **Pasta:** `Tela 2` (propositalmente: o guia fica aqui, na mesma pasta em que os componentes nascem e são usados pela primeira vez — você vê o resultado completo da decisão de design antes de voltar para aplicar no Login)
 **Objetivo:** converter a tela de Login existente (implementada inline no GUIA_01) para usar os componentes da pasta `src/componentes`, como já acontece no seu projeto
 **Formato:** somente as mudanças, seção por seção, com **"Apague estes trechos"** → **"Cole no lugar"** — sem repetir a explicação de cada componente (cada um já tem o seu comentário nos arquivos da Tela 2).
-**Pré-requisito:** `src/theme.js` presente e `src/componentes/{AuthScreen, BrandHeader, FormField, PasswordField, PrimaryButton, Stepper}.tsx` criados (ver GUIA_02 da Tela 2).
+**Pré-requisito:** `src/theme.js` presente e `src/componentes/{AuthScreen, BrandHeader, FormField, PasswordField, PrimaryButton, Stepper}.tsx` criados (ver [GUIA_02](GUIA_02_TELA_CADASTRO_EXPO.md) da Tela 2).
 
 ---
 
@@ -319,4 +319,10 @@ const styles = StyleSheet.create({
 
 ## 8. Próximos passos
 
-Quando a refatoração estiver estável e a navegação ligada, todas as telas de auth ficam deste formato. A próxima tela é a **Tela 3 (GUIA_04_TELA_CADASTRO_PASSO2_EXPO, pasta `Tela 3`)** — o passo 2 do cadastro ("Dados da clínica"), com a mesma estrutura de componentes. A conexão Login → Cadastro 1 → Cadastro 2 → Painel completa-se pelo `GUIA_03_NAVEGACAO_EXPO.md` (pasta `Tela 2`).
+Quando a refatoração estiver estável e a navegação ligada, todas as telas de auth ficam deste formato. A próxima tela é a **Tela 3 ([GUIA_04_TELA_CADASTRO_PASSO2_EXPO](../Tela%203/GUIA_04_TELA_CADASTRO_PASSO2_EXPO.md), pasta `Tela 3`)** — o passo 2 do cadastro ("Dados da clínica"), com a mesma estrutura de componentes. A conexão Login → Cadastro 1 → Cadastro 2 → Painel completa-se pelo [`GUIA_03_NAVEGACAO_EXPO.md`](GUIA_03_NAVEGACAO_EXPO.md) (pasta `Tela 2`).
+
+---
+
+| ◀ Anterior | Todos os guias | Próximo ▶ |
+| :--- | :---: | ---: |
+| [Guia 02 — Cadastro (Passo 1)](GUIA_02_TELA_CADASTRO_EXPO.md) | [Índice](../README.md) | [Guia 03 — Navegação entre telas](GUIA_03_NAVEGACAO_EXPO.md) |

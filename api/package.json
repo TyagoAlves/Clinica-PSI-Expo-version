@@ -2,7 +2,7 @@
   "name": "clinica-api",
   "version": "0.1.0",
   "private": true,
-  "description": "API REST da Clínica Psi (scaffold inicial — Node.js + TypeScript + Express)",
+  "description": "API REST da Clínica Psi (Node.js + TypeScript + Express + SQLite)",
   "type": "module",
   "main": "dist/server.js",
   "engines": {
@@ -17,18 +17,19 @@
     "test:watch": "vitest",
     "gen:key": "tsx scripts/gen-key.ts",
     "load-test": "tsx scripts/load-test.ts",
-    "db:reset": "node -e \"require('fs').rmSync('data',{recursive:true,force:true})\"",
+    "db:inspect": "tsx --env-file-if-exists=.env scripts/inspect-db.ts",
+    "db:reset": "node -e \"const fs=require('fs');for(const f of ['clinica.db','clinica.db-wal','clinica.db-shm'])fs.rmSync(f,{force:true})\"",
     "rotate-key": "tsx --env-file-if-exists=.env scripts/rotate-key.ts"
   },
   "dependencies": {
+    "better-sqlite3": "^13.0.3",
     "cors": "^2.8.6",
     "express": "^5.3.0",
-    "postgres": "^3.4.9",
     "zod": "^3.25.76"
   },
   "devDependencies": {
-    "@electric-sql/pglite": "^0.2.17",
     "@types/autocannon": "^7.12.7",
+    "@types/better-sqlite3": "^9.6.0",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/node": "^22.20.5",

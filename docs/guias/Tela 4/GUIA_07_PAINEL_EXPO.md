@@ -3,7 +3,7 @@
 **Projeto:** Clínica Psi — Prontuário para Psicólogos
 **Estado final:** `ESTADO_FINAL_COMPLETO.md` (raiz da pasta) - snapshot completo do app com todas as mudancas desta fase aplicadas
 **Imagem de referência:** `painel-vazio-mobile.png` (nesta mesma pasta)
-**Série:** GUIA_07 (GUIA_04 = Cadastro passo 2 · GUIA_05 = SQLite do conector — existe fora desta pasta · GUIA_03B = refactor do Login, pasta Tela 2 · GUIA_07 = esta tela)
+**Série:** GUIA_07 ([GUIA_04](../Tela%203/GUIA_04_TELA_CADASTRO_PASSO2_EXPO.md) = Cadastro passo 2 · GUIA_05 = SQLite do conector — existe fora desta pasta · [GUIA_03B](../Tela%202/GUIA_03B_REFATORACAO_COMPONENTES_TELA_1.md) = refactor do Login, pasta Tela 2 · GUIA_07 = esta tela)
 **Objetivo desta fase:** implementar o Painel em estado vazio (a tela para onde o usuário cai após login ou cadastro), sem navegação nova, sem backend — só o que aparece no mock de verdade.
 **Formato:** passo a passo, arquivo por arquivo, com todo o código pronto para colar. Nenhuma outra tela é modificada; `theme.js` segue intocado.
 
@@ -479,10 +479,10 @@ const styles = StyleSheet.create({
 ```
 
 **Explicação rápida:**
-- `☰` — abre a navegação lateral (GUIA_10 é quem implementa de verdade); até lá, o Alert explica o futuro para não confundir o usuário
+- `☰` — abre a navegação lateral ([GUIA_10](../Tela%206/GUIA_10_MENU_EXPO.md) é quem implementa de verdade); até lá, o Alert explica o futuro para não confundir o usuário
 - A barra superior é o componente `AppToolbar` — nesta fase, `searchDisabled`: campo de fachada com o placeholder exato do mock, sem digitação até a lista de pacientes existir
 - Toolbar e linha de título formam **uma faixa branca contínua** (mesmo `backgroundColor` + `marginHorizontal: -16` esticando até as bordas — toolbar no componente, título na `headerRow`); a hairline entre elas é a borda inferior da toolbar, e a hairline abaixo do título é a borda da `headerRow` — exatamente o que o mock mostra
-- `<EmptyHero onPress={emBreve} />` — os dois CTAs indigo disparam o mesmo "Em breve" desta fase; no GUIA_09 viram a abertura do modal
+- `<EmptyHero onPress={emBreve} />` — os dois CTAs indigo disparam o mesmo "Em breve" desta fase; no [GUIA_09](../Tela%205/GUIA_09_NOVO_PACIENTE_EXPO.md) viram a abertura do modal
 - `<SectionCard …>` ×3 — cada um é uma célula do mock; quando houver dados, só o corpo muda
 
 > A busca é de fachada (`searchDisabled`) até a lista de pacientes chegar — quando o GUIA_11 reutilizar a `AppToolbar` com `search`/`onChangeSearch`, a barra responde controlada sem uma linha de layout repetida. `emBreve()` centraliza as mensagens de "em breve" desta fase.
@@ -614,3 +614,9 @@ E a rota de entrada (qualquer uma das duas) pode ser `Painel` depois de `Login` 
 - Nada de instalar `react-native-gesture-handler`, `react-native-safe-area-context` — fora desnecessário para a fase
 - `AppScreen`/`AuthScreen` têm claramente propósito diferente; **não misture** só porque ambos têm `StatusBar`
 - Se um dia surgir um componente compartilhado entre Home e Painel (ex: `Toolbar`), extraia então; hoje seria generalização prematura
+
+---
+
+| ◀ Anterior | Todos os guias | Próximo ▶ |
+| :--- | :---: | ---: |
+| [Guia 04 — Cadastro (Passo 2)](../Tela%203/GUIA_04_TELA_CADASTRO_PASSO2_EXPO.md) | [Índice](../README.md) | [Guia 08 — Barras do sistema](GUIA_08_BARRAS_SISTEMA_EXPO.md) |

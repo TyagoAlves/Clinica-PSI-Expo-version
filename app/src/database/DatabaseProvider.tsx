@@ -1,6 +1,6 @@
 // src/database/DatabaseProvider.tsx
-// Fornece os repositórios de dados. Desde a migração para o Supabase, NÃO há banco no aparelho:
-// cada repositório lê/grava direto na API (que guarda tudo no PostgreSQL do Supabase).
+// Fornece os repositórios de dados. NÃO há banco no aparelho: cada repositório
+// lê/grava direto na API (que guarda tudo no SQLite local dela).
 // O nome "DatabaseProvider"/useDatabase foi mantido para não mexer nas telas.
 import React, { createContext, useContext, useMemo } from 'react';
 import { ApiTableRepo } from './repositories/ApiTableRepo';

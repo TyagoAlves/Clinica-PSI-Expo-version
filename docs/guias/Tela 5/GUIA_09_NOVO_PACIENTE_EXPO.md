@@ -5,7 +5,7 @@
 **Arquivo de referência:** `novo-paciente-mobile.png` (nesta mesma pasta)
 **Objetivo desta fase:** transformar o formulário "Novo paciente" em **um componente** (`src/componentes/NovoPacienteModal.tsx`) em vez de uma tela solta — vai ser usado pelo Painel (Tela 4) e pela lista de **Pacientes** (futura).
 
-**Pré-requisito:** a árvore do app deve ter `<SafeAreaProvider>` envolvendo a raiz — isso garante que `useSafeAreaInsets()` funcione no modal. Se você ainda não passou pelo **Guia 08 (barras do sistema)**, aplique antes (G08 garante o provider); sem ele, `insets.top`/`insets.bottom` retornam zero e o shell do modal fica mal posicionado.
+**Pré-requisito:** a árvore do app deve ter `<SafeAreaProvider>` envolvendo a raiz — isso garante que `useSafeAreaInsets()` funcione no modal. Se você ainda não passou pelo **[Guia 08 (barras do sistema)](../Tela%204/GUIA_08_BARRAS_SISTEMA_EXPO.md)**, aplique antes (G08 garante o provider); sem ele, `insets.top`/`insets.bottom` retornam zero e o shell do modal fica mal posicionado.
 
 ---
 
@@ -553,7 +553,7 @@ Logo antes do `</AppScreen>`, ou seja, como filho direto:
 
 ### 4.4 `src/screens/PainelScreen.tsx` — arquivo completo (para quem vai substituir o arquivo inteiro)
 
-> **Versão após o GUIA_09** (modal ligado, drawer ainda sem navegação). A versão **definitiva** — com o menu `☰` navegando para `Pacientes` — está em `ESTADO_FINAL_COMPLETO.md` §3.4 e no `GUIA_11`. Se você for substituir o arquivo inteiro agora, prefira a versão definitiva.
+> **Versão após o GUIA_09** (modal ligado, drawer ainda sem navegação). A versão **definitiva** — com o menu `☰` navegando para `Pacientes` — está em [`ESTADO_FINAL_COMPLETO.md`](../ESTADO_FINAL_COMPLETO.md) §3.4 e no [`GUIA_11`](../Tela%207/GUIA_11_PACIENTES_VAZIO_EXPO.md). Se você for substituir o arquivo inteiro agora, prefira a versão definitiva.
 
 Se você prefere copiar o arquivo inteiro de uma vez (e não remontar os passos §4.1–§4.3), aqui está o `PainelScreen.tsx` corrigido, já com `NovoPacienteModal`, `useState` e os dois botões:
 
@@ -782,3 +782,9 @@ Motivo em duas linhas:
 - Serviços reais vindos de `services/` — são listas hardcoded na fase
 - `SQLite` e callbacks de criação (vira integração no auth)
 - Exclusão/edição do paciente — este formulário é **criar**
+
+---
+
+| ◀ Anterior | Todos os guias | Próximo ▶ |
+| :--- | :---: | ---: |
+| [Guia 08 — Barras do sistema](../Tela%204/GUIA_08_BARRAS_SISTEMA_EXPO.md) | [Índice](../README.md) | [Guia 10 — Menu lateral (drawer)](../Tela%206/GUIA_10_MENU_EXPO.md) |
