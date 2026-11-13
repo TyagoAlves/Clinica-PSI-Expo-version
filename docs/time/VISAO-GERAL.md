@@ -1,7 +1,7 @@
 # Clínica Psi — Visão geral
 
 Mapa do projeto: como as partes se ligam e **onde está cada coisa**.
-Como rodar: [`DEV-SETUP.md`](DEV-SETUP.md) · Banco e API em detalhe: [`DOCUMENTACAO_BANCO_SUPABASE.md`](DOCUMENTACAO_BANCO_SUPABASE.md)
+Como rodar: [`DEV-SETUP.md`](DEV-SETUP.md) · Banco e API em detalhe: [`04-BANCO-DE-DADOS.md`](../04-BANCO-DE-DADOS.md)
 
 ---
 

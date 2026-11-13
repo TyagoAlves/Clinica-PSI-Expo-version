@@ -7,18 +7,18 @@ Clinica-PSI-Escopo-Reduzido
 ├── app/                      app mobile (Expo SDK 52 · React Native 0.76 · TypeScript)
 ├── api/                      API REST (Node.js · Express 5 · TS · zod · PostgreSQL/Supabase · vitest)
 ├── docs/
-│   ├── DOCUMENTACAO_BANCO_SUPABASE.md   apresentação: app → API → banco
-│   ├── DOCUMENTACAO_CSS.md              apresentação: visual das telas
-│   ├── VISAO-GERAL.md        mapa do projeto
-│   ├── DEV-SETUP.md          este arquivo
-│   ├── MUDANCAS.md           o que foi simplificado
-│   ├── BACKLOG-TIME.md       o que falta, por pessoa
+│   ├── 01-O-PROJETO.md … 06-CSS.md   tutoriais (para qualquer pessoa)
+│   ├── time/
+│   │   ├── VISAO-GERAL.md    mapa técnico do projeto
+│   │   ├── DEV-SETUP.md      este arquivo
+│   │   ├── MUDANCAS.md       o que foi simplificado
+│   │   └── BACKLOG-TIME.md   o que falta, por pessoa
 │   ├── guias/Tela 1..10/     guias originais do Tyago (históricos)
 │   └── screenshots/          capturas do emulador
 ├── tools/                    emulador.ps1 · screenshot.ps1 · logcat.ps1 · ui.mjs (automação)
 └── .github/workflows/ci.yml  CI: API (typecheck, testes, build) + app (typecheck)
 ```
-O detalhe das pastas dentro de `app/src` e `api/src` está no [`README.md`](../README.md#pastas).
+O detalhe das pastas dentro de `app/src` e `api/src` está no [`README.md`](../../README.md#pastas).
 
 ## Ferramentas instaladas
 

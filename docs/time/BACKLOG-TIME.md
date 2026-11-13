@@ -1,6 +1,6 @@
 # Clínica Psi — o que falta e quem cuida
 
-Atualizado em 13/11/2026. Mapa do projeto: [`VISAO-GERAL.md`](VISAO-GERAL.md) · Rotas da API: [`../api/API.md`](../api/API.md)
+Atualizado em 13/11/2026. Mapa do projeto: [`VISAO-GERAL.md`](VISAO-GERAL.md) · Rotas da API: [`api/API.md`](../../api/API.md)
 
 ## Estado atual
 

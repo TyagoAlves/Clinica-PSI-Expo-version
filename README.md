@@ -10,17 +10,28 @@ O app conversa com uma API Node.js, e a API guarda tudo no **Supabase (PostgreSQ
 Telas do app  →  bancoDados.ts  →  API Node.js (porta 3333)  →  Supabase (PostgreSQL)
 ```
 
-## Por onde começar
+## Por onde começar: tutoriais (para qualquer pessoa, mesmo sem saber programar)
+
+Leia na ordem:
+
+| # | Documento | O que você aprende |
+|---|---|---|
+| 1 | [O projeto](docs/01-O-PROJETO.md) | O que é o app, as 3 partes (app, API, banco) e a organização das pastas |
+| 2 | [Como baixar e rodar](docs/02-COMO-RODAR.md) | Instalar os programas, baixar o projeto e abrir no emulador, no Expo ou no celular |
+| 3 | [Conceitos de código](docs/03-CONCEITOS-DE-CODIGO.md) | As palavras de programação usadas no projeto (componente, função, hook, async...) |
+| 4 | [Banco de dados e Supabase](docs/04-BANCO-DE-DADOS.md) | O que é um banco, nossas tabelas, SQL, criptografia e como criar um banco no Supabase |
+| 5 | [API](docs/05-API.md) | O que é uma API, como a nossa foi feita, o que ela faz e como acessar |
+| 6 | [CSS (visual)](docs/06-CSS.md) | Cores, tamanhos, Flexbox, o tema e como mudar o visual |
+
+## Para o time (técnico)
 
 | Documento | Para quê |
 |---|---|
-| [`docs/DOCUMENTACAO_BANCO_SUPABASE.md`](docs/DOCUMENTACAO_BANCO_SUPABASE.md) | **Apresentação:** como app → API → Supabase conversam (tabelas, SQL, `bancoDados.ts`) |
-| [`docs/DOCUMENTACAO_CSS.md`](docs/DOCUMENTACAO_CSS.md) | **Apresentação:** cores, tema e estilos das telas |
-| [`docs/VISAO-GERAL.md`](docs/VISAO-GERAL.md) | Mapa do projeto: o que existe e onde está cada coisa |
-| [`docs/DEV-SETUP.md`](docs/DEV-SETUP.md) | Montar o ambiente e subir tudo (API, emulador, app) |
-| [`api/API.md`](api/API.md) | Lista de rotas da API |
-| [`docs/MUDANCAS.md`](docs/MUDANCAS.md) | O que foi simplificado em relação ao projeto completo |
-| [`docs/BACKLOG-TIME.md`](docs/BACKLOG-TIME.md) | O que falta e quem cuida |
+| [`api/API.md`](api/API.md) | Lista completa de rotas da API |
+| [`docs/time/VISAO-GERAL.md`](docs/time/VISAO-GERAL.md) | Mapa técnico: onde está cada coisa |
+| [`docs/time/DEV-SETUP.md`](docs/time/DEV-SETUP.md) | Ambiente detalhado, inspeção do emulador, problemas conhecidos |
+| [`docs/time/MUDANCAS.md`](docs/time/MUDANCAS.md) | O que foi simplificado em relação ao projeto completo |
+| [`docs/time/BACKLOG-TIME.md`](docs/time/BACKLOG-TIME.md) | O que falta e quem cuida |
 
 ## Pastas
 

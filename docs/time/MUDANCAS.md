@@ -18,7 +18,7 @@ telas do Tyago) está no `docs/MUDANCAS.md` do projeto completo.
 | Rotação de chave de criptografia | `DATA_ENCRYPTION_KEY_ID`, `OLD_KEYS`, `npm run rotate-key` | **Removida**: uma chave só |
 | Teste de carga | `npm run load-test` (autocannon) | **Removido** |
 | Testes automáticos da API | 50 | 40 (saíram os de sync, auditoria e rotação) |
-| Visual | Telas do Tyago | Telas ajustadas aos protótipos do Penpot (ver `DOCUMENTACAO_CSS.md`) |
+| Visual | Telas do Tyago | Telas ajustadas aos protótipos do Penpot (ver `06-CSS.md`) |
 
 O que **continua igual**: login com token, hash de senha, bloqueio após 5 erros, uma clínica não vê a outra,
 campos clínicos cifrados e RLS ligado no Supabase.
@@ -31,7 +31,7 @@ campos clínicos cifrados e RLS ligado no Supabase.
 - Cores, cantos e sombras dos protótipos reunidos em `app/src/theme.ts` (`colors`, `radius`, `card`, `cardShadow`, `buttonShadow`).
 - Todas as telas existentes restilizadas: Login, Cadastro 1 e 2, Painel, Pacientes, Detalhe do paciente, Agenda,
   Serviços, Configurações e os formulários. Nenhuma tela nova foi criada.
-- Detalhes e exemplos: [`DOCUMENTACAO_CSS.md`](DOCUMENTACAO_CSS.md).
+- Detalhes e exemplos: [`06-CSS.md`](../06-CSS.md).
 
 ### 2.2 Acesso aos dados
 - Novo `app/src/banco/bancoDados.ts` (ideia aproveitada da branch `Escopo-Reduzido-Yago`): 5 funções de CRUD
