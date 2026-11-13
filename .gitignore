@@ -1,20 +1,42 @@
-# Dependências e builds
+# Learn more https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
+
+# dependencies
 node_modules/
+
+# Expo
+.expo/
 dist/
 web-build/
-.expo/
+expo-env.d.ts
 
-# Segredos e dados locais da API (NUNCA commitar)
-.env
-api/data/
+# Native
+.kotlin/
+*.orig.*
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
 
-# Sistema / logs
-*.log
+# Metro
+.metro-health-check*
+
+# debug
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+
+# macOS
 .DS_Store
-Thumbs.db
+*.pem
 
-# Saídas temporárias da automação do emulador
-docs/screenshots/*.xml
+# local env files
+.env
+.env*.local
 
-# Protótipo antigo do Tyago: repositório próprio, mantido aqui só como referência
-Clinica-PSI-Expo-version/
+# typescript
+*.tsbuildinfo
+
+# generated native folders
+/ios
+/android
