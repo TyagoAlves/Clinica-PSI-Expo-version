@@ -74,6 +74,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#f8f1f1', //Cor de fundo da tela, cor branca meio azulada
     alignItems: 'center', //Alinhamento horizontal
     justifyContent: 'center', //Alinhamento vertical
+    padding: 20,
   },
   cartao: { //Cartão siginifica a parte branca que contem todos os objetos de login
     width: '100%',  //é 100% da largura do container pai.
