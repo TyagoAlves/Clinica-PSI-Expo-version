@@ -1,59 +1,83 @@
 import { View, Text, Pressable, StyleSheet, ScrollView } from 'react-native';
 
 export default function TelaHome({
-  aoNovo,
-  aoSair,
-  aoAgenda,
-  verPacientes,
-  totalPacientes = 0,
-  totalSecoes = 0,
+  aoNovo, //ao clicar no botão "Novo Paciente" troca para a telaNovoPaciente
+  aoSair,  //ao clicar no botão "Sair" troca para a telaLogin
+  aoAgenda,  //ao clicar no botão "Abrir Agenda" troca para a telaAgenda
+  verPacientes,  //ao clicar no botão "Ver Pacientes" troca para a telaPacientes
+  totalPacientes = 0,  //calculo de numeros de pacientes
+  totalSecoes = 0,  //calculo de numeros de seções
 }) {
   return (
-    <>
-    {/**/}
+    <>  {/* agrupa elementos sem criar um nó extra no DOM.*/} 
+    {/*<ScrollView contentContainerStyle={styles.tela}> Permite que a tela terá uma barra de scroll para ver itens fora da tela */}
     <ScrollView contentContainerStyle={styles.tela}>
       {/*<View style={styles.container} O componente View chama o estilo .container que esta no final da pagina*/}
       <View style={styles.container}>
+        {/*<Text style={styles.titulo} O componente Text chama o estilo .titulo que esta no final da pagina*/}
         <Text style={styles.titulo}>Painel</Text>
+        {/*<Text style={styles.subtitulo} O componente Text chama o estilo .subtitulo que esta no final da pagina*/}
         <Text style={styles.subtitulo}>Visão geral da clínica</Text>
 
         {/* Cartão de Pacientes */}
+        {/*<View style={styles.cartao} O componente View chama o estilo .cartao que esta no final da pagina*/}
         <View style={styles.cartao}>
-          <Text style={styles.tituloCartao}>
-            Pacientes cadastrados ({totalPacientes})
-          </Text>
+          {/*<Text style={styles.tituloCartao} O componente Text chama o estilo .tituloCartao que esta no final da pagina retornando o valor de "totalPacientes" ao lado*/}
+          <Text style={styles.tituloCartao}>Pacientes cadastrados ({totalPacientes})</Text>
+          {/*<Text style={styles.texto} O componente Text chama o estilo .texto que esta no final da pagina*/}
           <Text style={styles.texto}>
             Cadastre e acompanhe pacientes, sessões, evoluções e termos LGPD em
             um só lugar.
           </Text>
-
+          {/*
+          <Pressable style={styles.botaoPrimario} onPress={verPacientes}> O componente Pressable chama o estilo .botaoPrimario que esta no final da pagina
+          <Text style={styles.textoBotaoPrimario}>Ver Pacientes</Text> O componente Text chama o estilo .textoBotaoPrimario que esta no final da pagina
+          </Pressable> Fechamento do Pressable
+          */}
           <Pressable style={styles.botaoPrimario} onPress={verPacientes}>
             <Text style={styles.textoBotaoPrimario}>Ver Pacientes</Text>
           </Pressable>
-
+          {/*
+          <Pressable style={styles.botaoSecundario} onPress={aoNovo}> O componente Pressable chama o estilo .botaoSecundario que esta no final da pagina
+          <Text style={styles.textoBotaoSecundario}>+ Novo Paciente</Text> O componente Text chama o estilo .textoBotaoSecundario que esta no final da pagina
+          </Pressable> Fechamento do Pressable
+          */}
           <Pressable style={styles.botaoSecundario} onPress={aoNovo}>
             <Text style={styles.textoBotaoSecundario}>+ Novo Paciente</Text>
           </Pressable>
+          {/*Fechamento da View cartao*/}
         </View>
 
         {/* Cartão de Agenda */}
         <View style={styles.cartao}>
+          {/*<Text style={styles.tituloCartao} O componente Text chama o estilo .tituloCartao que esta no final da pagina retornando o valor de "totalSecoes" ao lado*/}
           <Text style={styles.tituloCartao}>
             Sessões agendadas ({totalSecoes})
           </Text>
+          {/*<Text style={styles.texto} O componente Text chama o estilo .texto que esta no final da pagina*/}
           <Text style={styles.texto}>
             Consulte os horários do dia ou agende uma nova sessão.
           </Text>
-
+          {/*
+          <Pressable style={styles.botaoPrimario} onPress={aoAgenda}> O componente Pressable chama o estilo .botaoPrimario que esta no final da pagina
+          <Text style={styles.textoBotaoPrimario}>Abrir Agenda</Text> O componente Text chama o estilo .textoBotaoPrimario que esta no final da pagina
+          </Pressable> Fechamento do Pressable
+          */}
           <Pressable style={styles.botaoPrimario} onPress={aoAgenda}>
             <Text style={styles.textoBotaoPrimario}>Abrir Agenda</Text>
           </Pressable>
         </View>
-
+          {/*
+          <Pressable style={styles.botaoPrimario} onPress={aoSair}> O componente Pressable chama o estilo .botaoPrimario que esta no final da pagina
+          <Text style={styles.textoBotaoPrimario}>Sair da conta</Text> O componente Text chama o estilo .textoBotaoPrimario que esta no final da pagina
+          </Pressable> Fechamento do Pressable
+          */}
         <Pressable style={styles.botaoSair} onPress={aoSair}>
           <Text style={styles.textoBotaoSair}>Sair da conta</Text>
         </Pressable>
+        {/*Fechamento da View cartao*/}
       </View>
+      {/*Fechamento da ScrollView tela*/}
     </ScrollView>
     </>
   );
@@ -63,8 +87,8 @@ const styles = StyleSheet.create({
   tela: {
 
     backgroundColor: '#f8f1f1', //Cor de fundo da tela, cor branca meio azulada
-    alignItems: 'center', //Alinhamento horizontal
-    justifyContent: 'center', //Alinhamento vertical
+    alignItems: 'center', //Alinhamento eixo cruzado
+    justifyContent: 'center', //Alinhamento eixo principal
     padding: 20,  //espaçamento interno
   },
   container: {

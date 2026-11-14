@@ -6,7 +6,7 @@ export default function TelaLogin({ aoEntrar }) {
   const [senha, setSenha] = useState('');
 
   return ( //o return de um componente React só pode ter um elemento raiz
-    <> {/*Usar um Fragment (<>...</>) se quiser que os dois itens sejam irmãos sem um wrapper extra*/} 
+    <> {/* agrupa elementos sem criar um nó extra no DOM.*/} 
 {/*<View style={styles.tela} O componente View chama o estilo .tela que esta no final da pagina
 */}
 <View style={styles.tela}>
@@ -36,7 +36,7 @@ export default function TelaLogin({ aoEntrar }) {
           onChangeText={setEmail}
         />
         {/*<Text style={styles.rotulo}>Senha</Text> O componente Text chama o estilo .rotulo que esta no final da pagina
-           <TextInput Campo de digitação do e-mail
+           <TextInput Campo de digitação da senha
           style={styles.input} O componente TextInput chama o estilo .input que esta no final da pagina
           placeholder="••••••••" O componente TextInput tem um texto interno que indica como deve ser preenchido o campo, e some ao começar a digitar
           secureTextEntry={true} Ao digitar no campo, a informação é protegida pela ocultação
@@ -72,8 +72,8 @@ const styles = StyleSheet.create({
   tela: {
     flex: 1, //preenche todo o espaço disponível
     backgroundColor: '#f8f1f1', //Cor de fundo da tela, cor branca meio azulada
-    alignItems: 'center', //Alinhamento horizontal
-    justifyContent: 'center', //Alinhamento vertical
+    alignItems: 'center', //Alinhamento eixo cruzado
+    justifyContent: 'center', //Alinhamento eixo principal
     padding: 20,
   },
   cartao: { //Cartão siginifica a parte branca que contem todos os objetos de login
