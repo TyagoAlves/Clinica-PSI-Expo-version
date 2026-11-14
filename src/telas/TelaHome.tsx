@@ -47,7 +47,7 @@ export default function TelaHome({
           </Pressable>
           {/*Fechamento da View cartao*/}
         </View>
-
+        {/*<View style={styles.cartao} O componente View chama o estilo .cartao que esta no final da pagina*/}
         {/* Cartão de Agenda */}
         <View style={styles.cartao}>
           {/*<Text style={styles.tituloCartao} O componente Text chama o estilo .tituloCartao que esta no final da pagina retornando o valor de "totalSecoes" ao lado*/}
@@ -85,7 +85,7 @@ export default function TelaHome({
 
 const styles = StyleSheet.create({
   tela: {
-
+    flexGrow: 1,
     backgroundColor: '#f8f1f1', //Cor de fundo da tela, cor branca meio azulada
     alignItems: 'center', //Alinhamento eixo cruzado
     justifyContent: 'center', //Alinhamento eixo principal
