@@ -109,7 +109,7 @@ export default function TelaEditarPaciente({
           onChangeText={setDescricao}
         />
         {/*
-        <Pressable style={styles.botaoPrimario} onPress={salvarAlteracoes}>   O componente Pressable chama o estilo .botaoPrimario que esta no final da pagina
+        <Pressable style={styles.botaoPrimario} onPress={salvarAlteracoes}>   O componente Pressable chama o estilo .botaoPrimario que esta no final da pagina chama a função salvarAlteracoes
         <Text style={styles.textoBotaoPrimario}>Salvar Alterações</Text>  O componente Text chama o estilo .textoBotaoPrimario que esta no final da pagina
         </Pressable>
         */}
