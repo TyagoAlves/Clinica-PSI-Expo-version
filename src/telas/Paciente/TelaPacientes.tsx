@@ -70,10 +70,10 @@ export default function TelaPacientes({
           ))
         )}
         {/*
-          <Pressable style={styles.botaoVoltar} onPress={aoVoltar}> O componente Pressable chama o estilo .botaoVoltar que esta no final da pagina chamando conteudo da tela anterior da lista
-          <Text style={styles.textoBotaoVoltar}>Voltar ao Painel</Text> O componente Text chama o estilo .textoBotaoVoltar que esta no final da pagina
-          </Pressable> Fechamento do Pressable
-          */}
+        <Pressable style={styles.botaoVoltar} onPress={aoVoltar}> O componente Pressable chama o estilo .botaoVoltar que esta no final da pagina chamando conteudo da tela anterior da lista
+        <Text style={styles.textoBotaoVoltar}>Voltar ao Painel</Text> O componente Text chama o estilo .textoBotaoVoltar que esta no final da pagina
+        </Pressable> Fechamento do Pressable
+        */}
         <Pressable style={styles.botaoVoltar} onPress={aoVoltar}>
           <Text style={styles.textoBotaoVoltar}>Voltar ao Painel</Text>
         </Pressable>
@@ -99,7 +99,7 @@ const styles = StyleSheet.create({
   titulo: {
     fontSize: 26,  //Tamanho do texto "Painel"
     fontWeight: 'bold',  //Negrito
-    color: '#1E293B',  //azul-navy profundo
+    color: '#1E293B',  //ardósia noturna
   },
   subtitulo: {
     fontSize: 15,  //Tamanho do texto "Visão geral da clínica"
@@ -117,7 +117,7 @@ const styles = StyleSheet.create({
   nomePaciente: {
     fontSize: 18,  //Tamanho do texto do nome de paciente
     fontWeight: 'bold',  //Negrito
-    color: '#1E293B',  //preto de lula
+    color: '#1E293B',  //ardósia noturna
     marginBottom: 4,  //espaçamento entre o texto e o item abaixo
   },
   detalhe: {

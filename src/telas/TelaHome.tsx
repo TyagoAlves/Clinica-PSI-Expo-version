@@ -98,7 +98,7 @@ const styles = StyleSheet.create({
   titulo: {
     fontSize: 26,  //Tamanho do texto "Painel"
     fontWeight: 'bold',  //Negrito
-    color: '#1E293B',  //azul-navy profundo
+    color: '#1E293B',  //ardósia noturna
   },
   subtitulo: {
     fontSize: 15,  //Tamanho do texto "Visão geral da clínica"
@@ -116,7 +116,7 @@ const styles = StyleSheet.create({
   tituloCartao: {
     fontSize: 18,  //Tamanho do texto "Pacientes cadastrados" e "Sessões agendadas "
     fontWeight: 'bold',  //Negrito
-    color: '#1E293B',  //azul escuro e dessaturado
+    color: '#1E293B',  //ardósia noturna
     marginBottom: 6,  //espaçamento entre o texto e o item abaixo
   },
   texto: {

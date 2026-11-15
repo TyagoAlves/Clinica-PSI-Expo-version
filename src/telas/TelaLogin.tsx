@@ -88,7 +88,7 @@ const styles = StyleSheet.create({
   titulo: {
     fontSize: 26, //Tamanho do texto "Clinica PSI"
     fontWeight: 'bold', //Negrito
-    color: '#1E293B', //azul-navy profundo
+    color: '#1E293B', //ardósia noturna
     textAlign: 'center', //Alinhamento do texto
   },
   subtitulo: {
@@ -104,7 +104,7 @@ const styles = StyleSheet.create({
     marginBottom: 6, //Espaçamento entre o texto e o item abaixo
   },
   input: {
-    backgroundColor: '#F8FAFC', //Cor de fundo do campo de digitação
+    backgroundColor: '#F8FAFC', //Cor de fundo do campo de digitação cinza azulado claro
     borderWidth: 1,  //Espessura da borda
     borderColor: '#CBD5E1',  //Cor da borda
     borderRadius: 8, //Arredondamento de borda
