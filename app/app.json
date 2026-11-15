@@ -1,0 +1,19 @@
+{
+  "expo": {
+    "name": "Clínica Psi",
+    "slug": "clinica-psi",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "splash": {
+      "backgroundColor": "#F1F3F8"
+    },
+    "web": {
+      "bundler": "metro"
+    },
+    "plugins": [
+      "expo-secure-store"
+    ]
+  }
+}

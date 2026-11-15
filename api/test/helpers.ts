@@ -1,0 +1,57 @@
+import { randomBytes } from 'node:crypto';
+import type { Express } from 'express';
+import request from 'supertest';
+import { createApp } from '../src/app.js';
+import type { Db } from '../src/db/connection.js';
+import { createPostgresRepositories } from '../src/repositories/postgres.js';
+import { LoginRateLimiter } from '../src/security/loginRateLimiter.js';
+import { createFieldCipher, type FieldCipher } from '../src/security/fieldCipher.js';
+import { createPgliteDb, resetDb } from './pgliteDb.js';
+
+export interface TestCtx {
+  app: Express;
+  db: Db;
+}
+
+// Um PostgreSQL (PGlite) por arquivo de teste, zerado a cada makeApp().
+let shared: Promise<Db> | null = null;
+export async function testDb(): Promise<Db> {
+  shared ??= createPgliteDb();
+  const db = await shared;
+  await resetDb(db);
+  return db;
+}
+
+/** App com banco PostgreSQL em memória e chave aleatória — cada teste começa limpo. */
+export async function makeApp(
+  opts: { limiter?: LoginRateLimiter; cipher?: FieldCipher } = {}
+): Promise<TestCtx> {
+  const db = await testDb();
+  const repos = createPostgresRepositories(db, opts.cipher ?? createFieldCipher(randomBytes(32)));
+  return {
+    app: createApp({
+      repos,
+      logRequests: false,
+      loginLimiter: opts.limiter ?? new LoginRateLimiter(),
+    }),
+    db,
+  };
+}
+
+/** Primeira linha de uma consulta (atalho para asserções diretas no banco). */
+export async function one<T = Record<string, unknown>>(db: Db, sql: string, params: unknown[] = []): Promise<T> {
+  return (await db.query<T>(sql, params))[0] as T;
+}
+
+let seq = 0;
+
+/** Cria conta (usuário + clínica) e devolve token e ids. */
+export async function signUp(app: Express, opts: { email?: string } = {}) {
+  const email = opts.email ?? `user${++seq}@clinica.com.br`;
+  const reg = await request(app)
+    .post('/api/v1/auth/register')
+    .send({ name: 'Ana Souza', email, password: 'segredo1', clinicName: 'Clínica Psi' });
+  return { email, token: reg.body.token as string, userId: reg.body.user.id as string, clinicId: reg.body.user.clinicId as string };
+}
+
+export const auth = (token: string) => ({ Authorization: `Bearer ${token}` });
