@@ -6,7 +6,8 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
-    "servidor": "node src/banco/servidor.js"
+    "servidor": "node src/banco/servidor.js",
+    "gen:key": "node -e \"console.log(require('crypto').randomBytes(32).toString('base64'))\""
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.2",

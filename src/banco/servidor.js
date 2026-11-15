@@ -1,5 +1,6 @@
-// Servidor simples integrado ao Supabase (PostgreSQL) usando o arquivo .env
-require('dotenv').config();
+// 
+const path = require('path');
+require('dotenv').config({ path: path.resolve(__dirname, '../../.env') });
 const http = require('http');
 const { Pool } = require('pg');
 

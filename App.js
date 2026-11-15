@@ -44,6 +44,7 @@ export default function App() {
     const criadoNoSupabase = await criarNoSupabase('pacientes', novoPaciente);
     if (criadoNoSupabase) {
       setPacientes([...pacientes, criadoNoSupabase]);
+      alert('Paciente registrado com sucesso!');
       setTelaAtual('TelaPacientes');
     }
   }
