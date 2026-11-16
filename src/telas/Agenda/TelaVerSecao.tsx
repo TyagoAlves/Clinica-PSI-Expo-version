@@ -17,7 +17,7 @@ export default function TelaVerSecao({ secao, aoVoltar, aoEditar }) {// Define o
           <Text style={styles.textoBotaoVoltar}>Voltar</Text> 
         {/*fecha o botão de voltar*/}
         </Pressable>  
-        {}
+        {/*Fechamento do componente tela*/}
       </View> 
     );   
       </>
@@ -26,48 +26,50 @@ export default function TelaVerSecao({ secao, aoVoltar, aoEditar }) {// Define o
 
   return (
     <>
-    {/**/}
+    {/*Define um View para permitir rolagem da tela, com estilo definido em styles.tela*/}
     <View style={styles.tela}>
       {/*Define a View do cartão com estilo definido em styles.cartao*/}
       <View style={styles.cartao}>
-        {/*Define a View do título com estilo definido em styles.titulo*/}
+        {/*Define Text do título com estilo definido em styles.titulo*/}
         <Text style={styles.titulo}>Detalhes da Seção</Text>
-        {/*Define a View do rótulo para o paciente com estilo definido em styles.rotulo*/}
+        {/*Define a Text do rótulo para o paciente com estilo definido em styles.rotulo*/}
         <Text style={styles.rotulo}>Paciente</Text>
-        {/**/}
-        {/**/}
+        {/*Define a Text do valor para o id do elemento secao.paciente com estilo definido em styles.rotulo*/}
+        {/*secao.paciente é o valor do campo, vinculado ao estado paciente*/}
         <Text style={styles.valor}>{secao.paciente}</Text>  
-        {/**/}
+        {/*Define a Text do rótulo para o Serviço com estilo definido em styles.rotulo*/}
         <Text style={styles.rotulo}>Serviço</Text>
-        {/**/}
-        {/**/}
+        {/*Define a Text do valor para o id do elemento secao.servico com estilo com estilo definido em styles.valor*/}
+        {/*secao.servico é o valor do campo, vinculado ao estado paciente*/}
         <Text style={styles.valor}>{secao.servico}</Text>
-        {/**/}
+        {/*Define a Text do rótulo para o paciente com estilo definido em styles.rotulo*/}
         <Text style={styles.rotulo}>Data e Horário</Text>
-        {/**/}
-        {/**/}
-        {/**/}
-        {/**/}
+        {/*Define a Text do valor para o id dos elementos e secao.data secao.horario e secao.duracao com estilo com estilo definido em styles.valor*/}
+        {/*secao.data é o valor do campo, vinculado ao estado paciente*/}
+        {/*secao.horario é o valor do campo, vinculado ao estado paciente*/}
+        {/*secao.duracao é o valor do campo, vinculado ao estado paciente*/}
         <Text style={styles.valor}>
           {secao.data} às {secao.horario} (Duração: {secao.duracao})
         </Text>
-        {/**/}
+        {/*Define a Text do rótulo para as Observações do paciente com estilo definido em styles.rotulo*/}
         <Text style={styles.rotulo}>Observações</Text>
-        {/**/}
+        {/*Define a Text do rótulo para o paciente com estilo definido em styles.rotulo*/}
+        {/*secao.observacoes é o valor do campo, vinculado ao estado paciente*/}
+        {/*|| se não tiver valor retona a mensagem 'Sem observações'*/}
         <Text style={styles.valor}>
           {secao.observacoes || 'Sem observações'}
         </Text>
         {/*
-        <Pressable style={styles.botaoPrimario} onPress={aoEditar}>
-          <Text style={styles.textoBotaoPrimario}>Editar Seção</Text>
+        <Pressable style={styles.botaoPrimario} onPress={aoEditar}>   //Define o botão "Editar Seção" com estilo definido em styles.botaoPrimario e chama a função aoEditar ao ser pressionado
+          <Text style={styles.textoBotaoPrimario}>Editar Seção</Text>  //Define o texto do botão "Editar Seção" com estilo definido em styles.textoBotaoPrimario
         </Pressable>
         */}
         <Pressable style={styles.botaoPrimario} onPress={aoEditar}>
           <Text style={styles.textoBotaoPrimario}>Editar Seção</Text>
         </Pressable>
         {/*
-        <Pressable style={styles.botaoVoltar} onPress={aoVoltar}>
-          <Text style={styles.textoBotaoVoltar}>Voltar para Agenda</Text>
+        <Pressable style={styles.botaoVoltar} onPress={aoVoltar}>   //Define o botão "Voltar para Agenda" com estilo definido em styles.botaoPrimario e chama a função aoVoltar ao ser pressionado
+          <Text style={styles.textoBotaoVoltar}>Voltar para Agenda</Text>  //Define o texto do botão "Voltar para Agenda" com estilo definido em styles.textoBotaoPrimario
         </Pressable>
         */}
         <Pressable style={styles.botaoVoltar} onPress={aoVoltar}>
@@ -75,7 +77,7 @@ export default function TelaVerSecao({ secao, aoVoltar, aoEditar }) {// Define o
         </Pressable>
         {/*fecha a View cartão*/}
       </View>
-      {/*/*fecha a View principal da tela*/*/}
+      {/*fecha a View principal da tela*/}
     </View>
     </>
   );

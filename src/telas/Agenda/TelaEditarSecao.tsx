@@ -40,9 +40,9 @@ export default function TelaEditarSecao({  // Define o componente funcional Tela
     <ScrollView contentContainerStyle={styles.tela}>  
       {/*Define a View do cartão com estilo definido em styles.cartao*/}
       <View style={styles.cartao}>
-        {/*Define a View do título com estilo definido em styles.titulo*/}
+        {/*Define o Text do título com estilo definido em styles.titulo*/}
         <Text style={styles.titulo}>Editar Seção</Text>
-        {/*Define a View do rótulo para o paciente com estilo definido em styles.rotulo*/}
+        {/*Define o Text do rótulo para o paciente com estilo definido em styles.rotulo*/}
         <Text style={styles.rotulo}>Paciente</Text>
         <TextInput // Define o campo de input para o paciente
           style={styles.input} // Aplica o estilo definido em styles.input
@@ -50,7 +50,7 @@ export default function TelaEditarSecao({  // Define o componente funcional Tela
           value={paciente} // Define o valor do campo paciente com o estado paciente
           onChangeText={setPaciente} // Atualiza o estado paciente ao digitar no campo
         />
-        {/*Define a View do rótulo para o serviço com estilo definido em styles.rotulo*/}
+        {/*Define o Text do rótulo para o serviço com estilo definido em styles.rotulo*/}
         <Text style={styles.rotulo}>Serviço</Text>
         <TextInput // Define o campo de input para o serviço
           style={styles.input} // Aplica o estilo definido em styles.input  
@@ -58,7 +58,7 @@ export default function TelaEditarSecao({  // Define o componente funcional Tela
           value={servico} // Define o valor do campo serviço com o estado serviço
           onChangeText={setServico} // Atualiza o estado serviço ao digitar no campo
         />
-        {/*Define a View do rótulo para a data com estilo definido em styles.rotulo*/}
+        {/*Define o Text do rótulo para a data com estilo definido em styles.rotulo*/}
         <Text style={styles.rotulo}>Data</Text>
         <TextInput // Define o campo de input para a data 
           style={styles.input} // Aplica o estilo definido em styles.input
@@ -66,7 +66,7 @@ export default function TelaEditarSecao({  // Define o componente funcional Tela
           value={data} // Define o valor do campo data com o estado data
           onChangeText={setData} // Atualiza o estado data ao digitar no campo
         />
-        {/*Define a View do rótulo para o horário com estilo definido em styles.rotulo*/}
+        {/*Define o Text do rótulo para o horário com estilo definido em styles.rotulo*/}
         <Text style={styles.rotulo}>Horário</Text>
         <TextInput // Define o campo de input para o horário
           style={styles.input} // Aplica o estilo definido em styles.input
@@ -74,7 +74,7 @@ export default function TelaEditarSecao({  // Define o componente funcional Tela
           value={horario} // Define o valor do campo horário com o estado horário
           onChangeText={setHorario} // Atualiza o estado horário ao digitar no campo
         />
-        {/*Define a View do rótulo para a duração com estilo definido em styles.rotulo*/}
+        {/*Define o Text do rótulo para a duração com estilo definido em styles.rotulo*/}
         <Text style={styles.rotulo}>Duração</Text>
         <TextInput // Define o campo de input para a duração
           style={styles.input} // Aplica o estilo definido em styles.input
@@ -82,7 +82,7 @@ export default function TelaEditarSecao({  // Define o componente funcional Tela
           value={duracao} // Define o valor do campo duração com o estado duração
           onChangeText={setDuracao} // Atualiza o estado duração ao digitar no campo
         />
-        {/*Define a View do rótulo para as observações com estilo definido em styles.rotulo*/}
+        {/*Define o Text do rótulo para as observações com estilo definido em styles.rotulo*/}
         <Text style={styles.rotulo}>Observações</Text>
         <TextInput // Define o campo de input para as observações
           style={styles.input} // Aplica o estilo definido em styles.input
@@ -113,8 +113,8 @@ export default function TelaEditarSecao({  // Define o componente funcional Tela
           <Text style={styles.textoBotaoPerigo}>Apagar Seção</Text>
         </Pressable>
         {/*
-        <Pressable style={styles.botaoVoltar} onPress={aoVoltar}>  //Define o botão "Voltar" com estilo definido em styles.botaoVoltar e chama a função aoVoltar ao ser pressionado
-          <Text style={styles.textoBotaoVoltar}>Cancelar / Voltar</Text>  //Define o texto do botão "Voltar" com estilo definido em styles.textoBotaoVoltar
+        <Pressable style={styles.botaoVoltar} onPress={aoVoltar}>  //Define o botão "Cancelar / Voltar" com estilo definido em styles.botaoVoltar e chama a função aoVoltar ao ser pressionado
+          <Text style={styles.textoBotaoVoltar}>Cancelar / Voltar</Text>  //Define o texto do botão "Cancelar / Voltar" com estilo definido em styles.textoBotaoVoltar
         </Pressable>
         */}
         <Pressable style={styles.botaoVoltar} onPress={aoVoltar}>

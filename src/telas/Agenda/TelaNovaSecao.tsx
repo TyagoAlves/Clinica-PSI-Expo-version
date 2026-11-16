@@ -25,13 +25,13 @@ export default function TelaNovaSecao({ aoSalvar, aoVoltar }) {  //Função que 
   } 
   return (
     <>
-    {/**/}
-    <ScrollView contentContainerStyle={styles.tela}>
-      {/**/}
+    {/*Define um ScrollView para permitir rolagem da tela, com estilo definido em styles.tela*/}
+    <ScrollView contentContainerStyle={styles.tela}>  
+      {/*Define a View do cartão com estilo definido em styles.cartao*/}
       <View style={styles.cartao}>
-        {/**/}
+        {/*Define o Text do título com estilo definido em styles.titulo*/}
         <Text style={styles.titulo}>Nova Seção</Text>
-        {/**/}
+        {/*Define o Text do rótulo para o paciente com estilo definido em styles.rotulo*/}
         <Text style={styles.rotulo}>Paciente</Text>
         <TextInput  //Componente TextInput que permite a entrada de texto para o campo paciente
           style={styles.input}  //Estilo definido em styles.input
@@ -39,7 +39,7 @@ export default function TelaNovaSecao({ aoSalvar, aoVoltar }) {  //Função que 
           value={paciente}  //Valor do campo, vinculado ao estado paciente
           onChangeText={setPaciente}  //Função chamada quando o texto do campo muda, atualizando o estado paciente
         />
-        {/**/}
+        {/*Define o Text do rótulo para o serviço com estilo definido em styles.rotulo*/}
         <Text style={styles.rotulo}>Serviço</Text>
         <TextInput  //Componente TextInput que permite a entrada de texto para o campo serviço
           style={styles.input}  //Estilo definido em styles.input
@@ -47,7 +47,7 @@ export default function TelaNovaSecao({ aoSalvar, aoVoltar }) {  //Função que 
           value={servico}  //Valor do campo, vinculado ao estado servico
           onChangeText={setServico}  //Função chamada quando o texto do campo muda, atualizando o estado servico
         />
-        {/**/}
+        {/*Define o Text do rótulo para a data com estilo definido em styles.rotulo*/}
         <Text style={styles.rotulo}>Data</Text>
         <TextInput  //Componente TextInput que permite a entrada de texto para o campo data
           style={styles.input}  //Estilo definido em styles.input
@@ -55,7 +55,7 @@ export default function TelaNovaSecao({ aoSalvar, aoVoltar }) {  //Função que 
           value={data}  //Valor do campo, vinculado ao estado data
           onChangeText={setData}  //Função chamada quando o texto do campo muda, atualizando o estado data
         />
-        {/**/}
+        {/*Define o Text do rótulo para o horário com estilo definido em styles.rotulo*/}
         <Text style={styles.rotulo}>Horário</Text>
         <TextInput  //Componente TextInput que permite a entrada de texto para o campo horário
           style={styles.input}  //Estilo definido em styles.input
@@ -63,7 +63,7 @@ export default function TelaNovaSecao({ aoSalvar, aoVoltar }) {  //Função que 
           value={horario}  //Valor do campo, vinculado ao estado horario
           onChangeText={setHorario}  //Função chamada quando o texto do campo muda, atualizando o estado horario
         />
-        {/**/}
+        {/*Define o Text do rótulo para a duração com estilo definido em styles.rotulo*/}
         <Text style={styles.rotulo}>Duração</Text>
         <TextInput  //Componente TextInput que permite a entrada de texto para o campo duração
           style={styles.input}  //Estilo definido em styles.input
@@ -71,7 +71,7 @@ export default function TelaNovaSecao({ aoSalvar, aoVoltar }) {  //Função que 
           value={duracao}  //Valor do campo, vinculado ao estado duracao
           onChangeText={setDuracao}  //Função chamada quando o texto do campo muda, atualizando o estado duracao
         />
-        {/**/}
+        {/*Define o Text do rótulo para as observações com estilo definido em styles.rotulo*/}
         <Text style={styles.rotulo}>Observações</Text>
         <TextInput  //Componente TextInput que permite a entrada de texto para o campo observações
           style={styles.input}  //Estilo definido em styles.input
@@ -80,22 +80,24 @@ export default function TelaNovaSecao({ aoSalvar, aoVoltar }) {  //Função que 
           onChangeText={setObservacoes}  //Função chamada quando o texto do campo muda, atualizando o estado observacoes
         />
         {/*
-        <Pressable style={styles.botaoPrimario} onPress={salvar}> 
-          <Text style={styles.textoBotaoPrimario}>Salvar Seção</Text>
+        <Pressable style={styles.botaoPrimario} onPress={salvar}>  //Define o botão "Salvar Seção" com estilo definido em styles.botaoPrimario
+          <Text style={styles.textoBotaoPrimario}>Salvar Seção</Text>  //Chama a função salvar ao ser pressionado
         </Pressable>
         */}
         <Pressable style={styles.botaoPrimario} onPress={salvar}>
           <Text style={styles.textoBotaoPrimario}>Salvar Seção</Text>
         </Pressable>
         {/*
-        <Pressable style={styles.botaoVoltar} onPress={aoVoltar}>
-          <Text style={styles.textoBotaoVoltar}>Cancelar / Voltar</Text>
+        <Pressable style={styles.botaoVoltar} onPress={aoVoltar}>  //Define o botão "Cancelar / Voltar com estilo definido em styles.botaoVoltar e chama a função aoVoltar ao ser pressionado
+          <Text style={styles.textoBotaoVoltar}>Cancelar / Voltar</Text>  //Define o texto do botão "Cancelar / Voltar" com estilo definido em styles.textoBotaoVoltar
         </Pressable>
         */}
         <Pressable style={styles.botaoVoltar} onPress={aoVoltar}>
           <Text style={styles.textoBotaoVoltar}>Cancelar / Voltar</Text>
         </Pressable>
+        {/*Fechamento do componente cartão*/}
       </View>
+      {/*Fechamento do componente tela*/}
     </ScrollView>
     </>
   );
