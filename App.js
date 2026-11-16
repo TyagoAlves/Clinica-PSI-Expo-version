@@ -10,6 +10,7 @@ import TelaEditarPaciente from './src/telas/Paciente/TelaEditarPaciente';
 import TelaNovaSecao from './src/telas/Agenda/TelaNovaSecao';
 import TelaEditarSecao from './src/telas/Agenda/TelaEditarSecao';
 import TelaVerSecao from './src/telas/Agenda/TelaVerSecao';
+// Importa as 4 funções de comunicação HTTP (CRUD) que conversam com o servidor do Supabase
 import {
   buscarDadosSupabase,
   criarNoSupabase,
@@ -18,78 +19,111 @@ import {
 } from './src/banco/bancoDados';
 
 export default function App() {
+  // Estado que controla qual tela está visível no momento (começa na TelaLogin)
   const [telaAtual, setTelaAtual] = useState('TelaLogin');
 
-  // Estados alimentados exclusivamente pelo banco Supabase
-  const [pacientes, setPacientes] = useState([]);
-  const [pacienteSelecionado, setPacienteSelecionado] = useState(null);
+  // ==========================================================================
+  // ESTADOS DO BANCO DE DADOS NA MEMÓRIA DO REACT
+  // Começam vazios ([]) porque todos os dados vêm exclusivamente do Supabase!
+  // ==========================================================================
+  const [pacientes, setPacientes] = useState([]); // Lista de pacientes carregada do Supabase
+  const [pacienteSelecionado, setPacienteSelecionado] = useState(null); // Paciente clicado para ver ou editar
 
-  const [secoes, setSecoes] = useState([]);
-  const [secaoSelecionada, setSecaoSelecionada] = useState(null);
+  const [secoes, setSecoes] = useState([]); // Lista de sessões da agenda carregada do Supabase
+  const [secaoSelecionada, setSecaoSelecionada] = useState(null); // Sessão clicada para ver ou editar
 
-  // Carrega os pacientes e seções direto do Supabase ao iniciar o app
+  // ==========================================================================
+  // 1. LEITURA INICIAL (READ) - Carrega os dados do Supabase assim que o App abre
+  // O array vazio [] no final garante que o useEffect rode apenas 1 vez ao iniciar
+  // ==========================================================================
   useEffect(() => {
     async function carregarDoSupabase() {
+      // Faz GET /pacientes no servidor, aguarda (await) a lista do Supabase e salva no estado 'pacientes'
       const listaPacientes = await buscarDadosSupabase('pacientes');
       setPacientes(listaPacientes);
 
+      // Faz GET /secoes no servidor, aguarda (await) a lista do Supabase e salva no estado 'secoes'
       const listaSecoes = await buscarDadosSupabase('secoes');
       setSecoes(listaSecoes);
     }
     carregarDoSupabase();
   }, []);
 
-  // --- Funções do Banco Supabase: Pacientes (Criar, Editar, Apagar) ---
+  // ==========================================================================
+  // 2. FUNÇÕES CRUD DE PACIENTES (CRIAR, EDITAR E APAGAR NO SUPABASE)
+  // ==========================================================================
+
+  // CRIAR PACIENTE (POST /pacientes)
   async function adicionarPaciente(novoPaciente) {
+    // Envia os dados preenchidos para o Supabase e aguarda o registro criado (já com o ID gerado pelo banco)
     const criadoNoSupabase = await criarNoSupabase('pacientes', novoPaciente);
     if (criadoNoSupabase) {
+      // Atualiza a lista na tela copiando os pacientes atuais (...pacientes) e adicionando o novo no final
       setPacientes([...pacientes, criadoNoSupabase]);
+      // Exibe um alerta simples confirmando o cadastro
       alert('Paciente registrado com sucesso!');
+      // Navega automaticamente de volta para a lista de pacientes
       setTelaAtual('TelaPacientes');
     }
   }
 
+  // EDITAR PACIENTE (PUT /pacientes/:id)
   async function salvarEdicaoPaciente(pacienteEditado) {
+    // Envia o ID e os novos dados para o Supabase atualizar a linha correspondente
     const atualizadoNoSupabase = await atualizarNoSupabase(
       'pacientes',
       pacienteEditado.id,
       pacienteEditado
     );
     if (atualizadoNoSupabase) {
+      // Percorre a lista com .map(): onde o ID for igual ao editado, substitui pelo novo vindo do Supabase
       const novaLista = pacientes.map((p) =>
         p.id === atualizadoNoSupabase.id ? atualizadoNoSupabase : p
       );
       setPacientes(novaLista);
+      // Atualiza também a ficha do paciente selecionado e volta para a tela de detalhes dele
       setPacienteSelecionado(atualizadoNoSupabase);
       setTelaAtual('TelaPaciente');
     }
   }
 
+  // APAGAR PACIENTE (DELETE /pacientes/:id)
   async function apagarPaciente(id) {
+    // Pede ao servidor para executar DELETE FROM pacientes WHERE id = $1 lá no Supabase
     const apagou = await apagarNoSupabase('pacientes', id);
     if (apagou) {
+      // Usa .filter() para manter na tela apenas os pacientes cujo ID seja diferente (!==) do que foi apagado
       setPacientes(pacientes.filter((p) => p.id !== id));
       setPacienteSelecionado(null);
       setTelaAtual('TelaPacientes');
     }
   }
 
-  // --- Funções do Banco Supabase: Seções da Agenda (Criar, Editar, Apagar) ---
+  // ==========================================================================
+  // 3. FUNÇÕES CRUD DE SEÇÕES DA AGENDA (CRIAR, EDITAR E APAGAR NO SUPABASE)
+  // ==========================================================================
+
+  // CRIAR SEÇÃO (POST /secoes)
   async function adicionarSecao(novaSecao) {
+    // Envia a nova sessão para a tabela 'secoes' do Supabase
     const criadaNoSupabase = await criarNoSupabase('secoes', novaSecao);
     if (criadaNoSupabase) {
+      // Adiciona a sessão recém-criada (com seu novo ID) ao final da lista da agenda
       setSecoes([...secoes, criadaNoSupabase]);
       setTelaAtual('TelaAgenda');
     }
   }
 
+  // EDITAR SEÇÃO (PUT /secoes/:id)
   async function salvarEdicaoSecao(secaoEditada) {
+    // Atualiza os dados da sessão no Supabase pelo ID
     const atualizadaNoSupabase = await atualizarNoSupabase(
       'secoes',
       secaoEditada.id,
       secaoEditada
     );
     if (atualizadaNoSupabase) {
+      // Substitui a sessão antiga pela versão atualizada na lista usando .map()
       const novaLista = secoes.map((s) =>
         s.id === atualizadaNoSupabase.id ? atualizadaNoSupabase : s
       );
@@ -99,9 +133,12 @@ export default function App() {
     }
   }
 
+  // APAGAR SEÇÃO (DELETE /secoes/:id)
   async function apagarSecao(id) {
+    // Remove a sessão da tabela 'secoes' no Supabase pelo ID
     const apagou = await apagarNoSupabase('secoes', id);
     if (apagou) {
+      // Filtra a lista mantendo apenas as sessões que não foram apagadas
       setSecoes(secoes.filter((s) => s.id !== id));
       setSecaoSelecionada(null);
       setTelaAtual('TelaAgenda');
