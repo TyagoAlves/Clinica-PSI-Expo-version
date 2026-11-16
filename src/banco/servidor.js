@@ -1,49 +1,48 @@
 // ============================================================================
 // ARQUIVO: src/banco/servidor.js
-// FUNÇÃO: Servidor Back-end em Node.js que faz a ponte entre o Aplicativo (HTTP)
-//         e o Banco de Dados PostgreSQL na nuvem do Supabase (protocolo TCP).
+// FUNÇÃO: Servidor Back-end em Node.js usando BANCO DE DADOS LOCAL SQLITE.
+//         Atende as requisições HTTP do aplicativo (GET, POST, PUT, DELETE)
+//         e persiste os dados no arquivo local clinica.db (pasta data/).
 // ============================================================================
 
-// Importa o módulo nativo 'path' do Node.js para localizar caminhos de pastas no computador
+const fs = require('fs');
 const path = require('path');
-
-// Importa o 'dotenv' e carrega o arquivo '.env' que está duas pastas acima (../../.env, na raiz do projeto)
-// Isso injeta as variáveis secretas (como DATABASE_URL, HOST e PORT) dentro de 'process.env'
-require('dotenv').config({ path: path.resolve(__dirname, '../../.env') });
-
-// Importa o módulo nativo 'http' do Node.js para criar o servidor web local sem precisar de Express
 const http = require('http');
 
-// Importa a classe 'Pool' da biblioteca 'pg' (node-postgres), que é o driver oficial do PostgreSQL para Node.js
-const { Pool } = require('pg');
+// Carrega as variáveis do arquivo .env
+require('dotenv').config({ path: path.resolve(__dirname, '../../.env') });
 
-// Define o endereço onde o servidor vai rodar: usa o HOST do .env ou '127.0.0.1' (localhost) como padrão
+// Importa o driver oficial e de alta performance do SQLite para Node.js
+const Database = require('better-sqlite3');
+
+// Define endereço, porta e caminho do arquivo do banco SQLite
 const HOST = process.env.HOST || '127.0.0.1';
-
-// Define a porta onde o servidor vai escutar: usa a PORT do .env convertida para número ou 3333 como padrão
 const PORT = Number(process.env.PORT) || 3333;
+const DB_PATH = process.env.DB_PATH || './data/clinica.db';
 
-// Cria o Pool (conjunto) de conexões com o PostgreSQL do Supabase
-// Em vez de abrir e fechar uma conexão nova a cada clique (o que seria lento), o Pool mantém conexões prontas
-const pool = new Pool({
-  // Pega a URL completa com usuário, senha, host e porta do Supabase que está protegida no arquivo .env
-  connectionString: process.env.DATABASE_URL,
-  // Exige conexão criptografada (SSL/TLS) com a nuvem da AWS/Supabase, aceitando o certificado do pooler
-  ssl: { rejectUnauthorized: false },
-});
+// Garante que a pasta do banco (ex.: ./data) exista no computador
+const dbDir = path.dirname(path.resolve(__dirname, '../../', DB_PATH));
+if (!fs.existsSync(dbDir)) {
+  fs.mkdirSync(dbDir, { recursive: true });
+}
+
+// Abre/Cria o arquivo local do banco SQLite (clinica.db)
+const db = new Database(path.resolve(__dirname, '../../', DB_PATH));
+
+// Ativa o modo WAL (Write-Ahead Logging) do SQLite para maior rapidez e segurança de concorrência
+db.pragma('journal_mode = WAL');
 
 // ============================================================================
 // FUNÇÃO: inicializarBanco()
-// Roda automaticamente ao ligar o servidor para garantir que as tabelas existam
-// no Supabase e, se estiverem vazias, insere os registros iniciais de exemplo.
+// Cria as tabelas necessárias no SQLite caso ainda não existam e,
+// se o banco estiver vazio, insere registros iniciais de exemplo.
 // ============================================================================
-async function inicializarBanco() {
-  // 1. Executa comando SQL (DDL) para criar a tabela 'pacientes' caso ela ainda não exista no Supabase
-  // - id SERIAL PRIMARY KEY: o próprio PostgreSQL gera o ID único auto-incrementado (1, 2, 3...)
-  // - TEXT NOT NULL: campos de texto obrigatórios (não aceitam valor nulo)
-  await pool.query(`
+function inicializarBanco() {
+  // 1. Criação da tabela 'pacientes' no SQLite
+  // - id INTEGER PRIMARY KEY AUTOINCREMENT: ID auto-incrementado pelo SQLite (1, 2, 3...)
+  db.exec(`
     CREATE TABLE IF NOT EXISTS pacientes (
-      id SERIAL PRIMARY KEY,
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
       nome TEXT NOT NULL,
       servico TEXT NOT NULL,
       inicio TEXT NOT NULL,
@@ -51,11 +50,10 @@ async function inicializarBanco() {
     );
   `);
 
-  // 2. Executa comando SQL (DDL) para criar a tabela 'secoes' (Agenda) caso ela ainda não exista
-  // - observacoes TEXT DEFAULT '': campo opcional que, se não for enviado, salva texto vazio ''
-  await pool.query(`
+  // 2. Criação da tabela 'secoes' (Agenda) no SQLite
+  db.exec(`
     CREATE TABLE IF NOT EXISTS secoes (
-      id SERIAL PRIMARY KEY,
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
       paciente TEXT NOT NULL,
       servico TEXT NOT NULL,
       data TEXT NOT NULL,
@@ -65,231 +63,192 @@ async function inicializarBanco() {
     );
   `);
 
-  // 3. Conta quantos registros já existem na tabela 'pacientes' lá no Supabase
-  const { rows: pacientesExistentes } = await pool.query(
-    'SELECT COUNT(*) AS total FROM pacientes'
-  );
+  // 3. Verifica se a tabela 'pacientes' está vazia
+  const totalPacientes = db
+    .prepare('SELECT COUNT(*) AS total FROM pacientes')
+    .get().total;
 
-  // Se o total for 0 (tabela recém-criada ou vazia), insere 3 pacientes iniciais (Seed)
-  if (Number(pacientesExistentes[0].total) === 0) {
-    await pool.query(`
-      INSERT INTO pacientes (nome, servico, inicio, descricao) VALUES
-      ('Maria Silva', 'Psicoterapia', '10/03/2026', 'Ansiedade e rotina de trabalho intensa'),
-      ('João Santos', 'Avaliação', '05/08/2026', 'Avaliação psicológica inicial'),
-      ('Ana Oliveira', 'Psicoterapia', '01/11/2026', 'Acompanhamento quinzenal');
+  if (totalPacientes === 0) {
+    const insertPaciente = db.prepare(`
+      INSERT INTO pacientes (nome, servico, inicio, descricao) VALUES (?, ?, ?, ?)
     `);
+
+    insertPaciente.run('Maria Silva', 'Psicoterapia', '10/03/2026', 'Ansiedade e rotina de trabalho intensa');
+    insertPaciente.run('João Santos', 'Avaliação', '05/08/2026', 'Avaliação psicológica inicial');
+    insertPaciente.run('Ana Oliveira', 'Psicoterapia', '01/11/2026', 'Acompanhamento quinzenal');
   }
 
-  // 4. Conta quantos registros já existem na tabela 'secoes' lá no Supabase
-  const { rows: secoesExistentes } = await pool.query(
-    'SELECT COUNT(*) AS total FROM secoes'
-  );
+  // 4. Verifica se a tabela 'secoes' está vazia
+  const totalSecoes = db
+    .prepare('SELECT COUNT(*) AS total FROM secoes')
+    .get().total;
 
-  // Se o total for 0 (tabela vazia), insere 2 sessões iniciais na agenda (Seed)
-  if (Number(secoesExistentes[0].total) === 0) {
-    await pool.query(`
-      INSERT INTO secoes (paciente, servico, data, horario, duracao, observacoes) VALUES
-      ('Maria Silva', 'Psicoterapia', '12/11/2026', '14:00', '00:50', 'Sessão de acompanhamento semanal'),
-      ('João Santos', 'Avaliação', '12/11/2026', '15:00', '00:50', 'Primeira consulta, trazer exames');
+  if (totalSecoes === 0) {
+    const insertSecao = db.prepare(`
+      INSERT INTO secoes (paciente, servico, data, horario, duracao, observacoes) VALUES (?, ?, ?, ?, ?, ?)
     `);
+
+    insertSecao.run('Maria Silva', 'Psicoterapia', '12/11/2026', '14:00', '00:50', 'Sessão de acompanhamento semanal');
+    insertSecao.run('João Santos', 'Avaliação', '12/11/2026', '15:00', '00:50', 'Primeira consulta, trazer exames');
   }
 
-  // Exibe confirmação no terminal informando que o banco está pronto
-  console.log('Banco Supabase inicializado e sincronizado com sucesso!');
+  console.log(`Banco de Dados SQLite inicializado com sucesso em: ${DB_PATH}`);
 }
 
 // ============================================================================
-// FUNÇÃO AUXILIAR: lerCorpoJson(req)
-// Lê os dados enviados pelo aplicativo no corpo (body) de requisições POST e PUT.
-// Como o Node.js puro recebe os dados da rede em pedaços (stream), juntamos tudo
-// e depois convertemos de texto JSON para objeto JavaScript com JSON.parse().
+// FUNÇÃO AUXILIAR: lerCorpoJson(req) - Versão Simplificada Moderna
+// Usa 'for await' para acumular os pedaços recebidos pela rede e converte em JSON.
 // ============================================================================
-function lerCorpoJson(req) {
-  return new Promise((resolve, reject) => {
-    let corpo = ''; // Variável que vai acumular o texto JSON que chega pela rede
-    req.on('data', (pedaco) => (corpo += pedaco)); // A cada pedaço recebido, concatena na variável 'corpo'
-    req.on('end', () => {
-      // Quando todos os pedaços terminam de chegar:
-      try {
-        // Transforma a string JSON em um objeto JavaScript (ou retorna {} se vier vazio)
-        resolve(corpo ? JSON.parse(corpo) : {});
-      } catch (e) {
-        // Se o JSON estiver malformado, rejeita a Promise e cai no bloco catch do servidor
-        reject(e);
-      }
-    });
-  });
+async function lerCorpoJson(req) {
+  let corpo = '';
+  for await (const pedaco of req) {
+    corpo += pedaco;
+  }
+  return corpo ? JSON.parse(corpo) : {};
 }
 
 // ============================================================================
 // FUNÇÃO AUXILIAR: responderJson(res, status, dados)
-// Padroniza todas as respostas do servidor para o aplicativo em formato JSON
-// e configura os cabeçalhos de CORS (Cross-Origin Resource Sharing).
+// Padroniza as respostas HTTP do servidor em formato JSON e libera o CORS.
 // ============================================================================
 function responderJson(res, status, dados) {
   res.writeHead(status, {
-    // Avisa ao navegador/app que a resposta é um JSON codificado em UTF-8 (aceita acentos)
     'Content-Type': 'application/json; charset=utf-8',
-    // CORS: Libera que o Expo Web (porta 8081) converse com este servidor (porta 3333) sem bloqueio do navegador
-    'Access-Control-Allow-Origin': '*',
-    // CORS: Libera os 4 métodos do CRUD (GET, POST, PUT, DELETE) + OPTIONS
+    'Access-Control-Allow-Origin': '*', // Libera para o Expo Web (localhost:8081)
     'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-    // CORS: Autoriza o envio do cabeçalho Content-Type nas requisições
     'Access-Control-Allow-Headers': 'Content-Type',
   });
-  // Converte o objeto/array JavaScript em texto JSON e finaliza o envio da resposta
   res.end(JSON.stringify(dados));
 }
 
 // ============================================================================
-// CRIAÇÃO DO SERVIDOR HTTP E ROTAS DO CRUD (PACIENTES E SEÇÕES)
-// Toda requisição que chega em http://127.0.0.1:3333 entra nesta função async.
+// SERVIDOR HTTP: ROTAS DO CRUD EM SQLITE (PACIENTES E SEÇÕES)
 // ============================================================================
 const servidor = http.createServer(async (req, res) => {
-  // Tratamento de Preflight (OPTIONS): antes de um POST, PUT ou DELETE, o navegador
-  // pergunta ao servidor via método OPTIONS se a operação é permitida pelo CORS. Respondemos 200 OK.
+  // Resposta para requisição de preflight do CORS
   if (req.method === 'OPTIONS') {
     return responderJson(res, 200, { ok: true });
   }
 
-  // Pega o caminho da rota chamada pelo aplicativo (ex.: '/pacientes' ou '/pacientes/4')
   const url = req.url || '/';
 
   try {
     // ========================================================================
-    // ROTAS DA TABELA: PACIENTES
+    // ROTAS: PACIENTES (CRUD EM SQLITE)
     // ========================================================================
 
-    // 1. READ (Listar Pacientes) -> Método GET em '/pacientes'
+    // 1. READ: Listar todos os pacientes (GET /pacientes)
     if (url === '/pacientes' && req.method === 'GET') {
-      // Busca todas as colunas (*) da tabela pacientes ordenadas pelo ID crescente (ASC)
-      const { rows } = await pool.query(
-        'SELECT * FROM pacientes ORDER BY id ASC'
-      );
-      // Retorna status 200 (OK) com a lista de pacientes vinda do Supabase
+      const rows = db.prepare('SELECT * FROM pacientes ORDER BY id ASC').all();
       return responderJson(res, 200, rows);
     }
 
-    // 2. CREATE (Cadastrar Paciente) -> Método POST em '/pacientes'
+    // 2. CREATE: Cadastrar novo paciente (POST /pacientes)
     if (url === '/pacientes' && req.method === 'POST') {
-      // Lê os 4 campos enviados pelo formulário da TelaNovoPaciente
       const { nome, servico, inicio, descricao } = await lerCorpoJson(req);
-      // Insere no Supabase usando parâmetros ($1, $2, $3, $4) para evitar SQL Injection
-      // O comando 'RETURNING *' faz o PostgreSQL devolver o registro criado já com o 'id' gerado
-      const { rows } = await pool.query(
-        'INSERT INTO pacientes (nome, servico, inicio, descricao) VALUES ($1, $2, $3, $4) RETURNING *',
-        [nome, servico, inicio, descricao]
-      );
-      // Retorna status 201 (Created) com o paciente recém-criado (rows[0])
-      return responderJson(res, 201, rows[0]);
+      const novoPaciente = db
+        .prepare(`
+          INSERT INTO pacientes (nome, servico, inicio, descricao)
+          VALUES (?, ?, ?, ?)
+          RETURNING *
+        `)
+        .get(nome, servico, inicio, descricao);
+
+      return responderJson(res, 201, novoPaciente);
     }
 
-    // 3. UPDATE (Editar Paciente) -> Método PUT em '/pacientes/:id' (ex.: '/pacientes/4')
+    // 3. UPDATE: Editar paciente existente (PUT /pacientes/:id)
     if (url.startsWith('/pacientes/') && req.method === 'PUT') {
-      // Quebra a URL nas barras ('/pacientes/4' -> ['', 'pacientes', '4']) e pega o ID na posição [2]
       const id = Number(url.split('/')[2]);
-      // Lê os novos dados digitados na TelaEditarPaciente
       const { nome, servico, inicio, descricao } = await lerCorpoJson(req);
-      // Atualiza no Supabase apenas a linha cujo id seja igual a $5, devolvendo a linha atualizada com RETURNING *
-      const { rows } = await pool.query(
-        'UPDATE pacientes SET nome = $1, servico = $2, inicio = $3, descricao = $4 WHERE id = $5 RETURNING *',
-        [nome, servico, inicio, descricao, id]
-      );
-      // Retorna status 200 (OK) com o paciente atualizado
-      return responderJson(res, 200, rows[0]);
+
+      const pacienteAtualizado = db
+        .prepare(`
+          UPDATE pacientes
+          SET nome = ?, servico = ?, inicio = ?, descricao = ?
+          WHERE id = ?
+          RETURNING *
+        `)
+        .get(nome, servico, inicio, descricao, id);
+
+      return responderJson(res, 200, pacienteAtualizado);
     }
 
-    // 4. DELETE (Apagar Paciente) -> Método DELETE em '/pacientes/:id' (ex.: '/pacientes/4')
+    // 4. DELETE: Remover paciente (DELETE /pacientes/:id)
     if (url.startsWith('/pacientes/') && req.method === 'DELETE') {
-      // Extrai o ID da URL e converte para número
       const id = Number(url.split('/')[2]);
-      // Executa o DELETE no Supabase removendo apenas o paciente daquele ID ($1)
-      await pool.query('DELETE FROM pacientes WHERE id = $1', [id]);
-      // Retorna status 200 (OK) confirmando a remoção
+      db.prepare('DELETE FROM pacientes WHERE id = ?').run(id);
       return responderJson(res, 200, { removido: true });
     }
 
     // ========================================================================
-    // ROTAS DA TABELA: SEÇÕES (AGENDA)
+    // ROTAS: SEÇÕES DA AGENDA (CRUD EM SQLITE)
     // ========================================================================
 
-    // 1. READ (Listar Seções da Agenda) -> Método GET em '/secoes'
+    // 1. READ: Listar todas as seções (GET /secoes)
     if (url === '/secoes' && req.method === 'GET') {
-      // Busca todas as seções agendadas ordenadas pelo ID crescente
-      const { rows } = await pool.query('SELECT * FROM secoes ORDER BY id ASC');
+      const rows = db.prepare('SELECT * FROM secoes ORDER BY id ASC').all();
       return responderJson(res, 200, rows);
     }
 
-    // 2. CREATE (Agendar Nova Seção) -> Método POST em '/secoes'
+    // 2. CREATE: Agendar nova seção (POST /secoes)
     if (url === '/secoes' && req.method === 'POST') {
-      // Lê os 6 campos enviados pelo formulário da TelaNovaSecao
       const { paciente, servico, data, horario, duracao, observacoes } =
         await lerCorpoJson(req);
-      // Insere na tabela 'secoes' com parâmetros protegidos ($1 a $6) e devolve o registro criado (RETURNING *)
-      const { rows } = await pool.query(
-        'INSERT INTO secoes (paciente, servico, data, horario, duracao, observacoes) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
-        [paciente, servico, data, horario, duracao, observacoes || '']
-      );
-      return responderJson(res, 201, rows[0]);
+
+      const novaSecao = db
+        .prepare(`
+          INSERT INTO secoes (paciente, servico, data, horario, duracao, observacoes)
+          VALUES (?, ?, ?, ?, ?, ?)
+          RETURNING *
+        `)
+        .get(paciente, servico, data, horario, duracao, observacoes || '');
+
+      return responderJson(res, 201, novaSecao);
     }
 
-    // 3. UPDATE (Editar Seção da Agenda) -> Método PUT em '/secoes/:id'
+    // 3. UPDATE: Editar seção agendada (PUT /secoes/:id)
     if (url.startsWith('/secoes/') && req.method === 'PUT') {
-      // Extrai o ID da seção a partir da URL (ex.: '/secoes/3' -> 3)
       const id = Number(url.split('/')[2]);
-      // Lê os dados alterados enviados pela TelaEditarSecao
       const { paciente, servico, data, horario, duracao, observacoes } =
         await lerCorpoJson(req);
-      // Atualiza a seção correspondente ao ID ($7) no Supabase e devolve o registro atualizado
-      const { rows } = await pool.query(
-        'UPDATE secoes SET paciente = $1, servico = $2, data = $3, horario = $4, duracao = $5, observacoes = $6 WHERE id = $7 RETURNING *',
-        [paciente, servico, data, horario, duracao, observacoes || '', id]
-      );
-      return responderJson(res, 200, rows[0]);
+
+      const secaoAtualizada = db
+        .prepare(`
+          UPDATE secoes
+          SET paciente = ?, servico = ?, data = ?, horario = ?, duracao = ?, observacoes = ?
+          WHERE id = ?
+          RETURNING *
+        `)
+        .get(paciente, servico, data, horario, duracao, observacoes || '', id);
+
+      return responderJson(res, 200, secaoAtualizada);
     }
 
-    // 4. DELETE (Apagar Seção da Agenda) -> Método DELETE em '/secoes/:id'
+    // 4. DELETE: Cancelar/Apagar seção (DELETE /secoes/:id)
     if (url.startsWith('/secoes/') && req.method === 'DELETE') {
-      // Extrai o ID da seção a partir da URL
       const id = Number(url.split('/')[2]);
-      // Remove a seção do banco Supabase pelo ID ($1)
-      await pool.query('DELETE FROM secoes WHERE id = $1', [id]);
+      db.prepare('DELETE FROM secoes WHERE id = ?').run(id);
       return responderJson(res, 200, { removido: true });
     }
 
-    // Se o aplicativo chamar qualquer URL que não exista acima, retorna erro 404 (Não Encontrado)
     return responderJson(res, 404, { erro: 'Rota não encontrada' });
   } catch (erro) {
-    // Se ocorrer qualquer falha de banco ou rede, mostra no terminal e retorna erro 500 ao app sem derrubar o servidor
-    console.error('Erro no servidor:', erro.message);
+    console.error('Erro no servidor SQLite:', erro.message);
     return responderJson(res, 500, { erro: erro.message });
   }
 });
 
 // ============================================================================
-// PARTIDA DO SERVIDOR
+// PARTIDA DO SERVIDOR SQLITE
 // ============================================================================
-// Se o arquivo for rodado com a flag '--init' (node src/banco/servidor.js --init),
-// ele apenas cria/sincroniza as tabelas no Supabase e encerra a conexão.
 if (process.argv.includes('--init')) {
-  inicializarBanco()
-    .then(() => pool.end())
-    .catch((err) => {
-      console.error('Falha ao conectar no Supabase:', err.message);
-      process.exit(1);
-    });
+  inicializarBanco();
+  console.log('Verificação/Inicialização do SQLite finalizada.');
+  process.exit(0);
 } else {
-  // Modo normal (npm run servidor): sincroniza as tabelas no Supabase e deixa o servidor
-  // escutando continuamente em http://127.0.0.1:3333 aguardando os cliques do aplicativo.
-  inicializarBanco()
-    .then(() => {
-      servidor.listen(PORT, HOST, () => {
-        console.log(
-          `Servidor conectado ao Supabase rodando em http://${HOST}:${PORT}`
-        );
-      });
-    })
-    .catch((err) => {
-      console.error('Erro ao iniciar banco Supabase:', err.message);
-    });
+  inicializarBanco();
+  servidor.listen(PORT, HOST, () => {
+    console.log(`Servidor SQLite rodando com sucesso em http://${HOST}:${PORT}`);
+  });
 }
