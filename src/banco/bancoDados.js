@@ -5,8 +5,31 @@
 //         servidor Node.js local (src/banco/servidor.js), persistindo em SQLite.
 // ============================================================================
 
-// Endereço do servidor local SQLite
-const API_URL = 'http://127.0.0.1:3333';
+// Resolve dinamicamente a URL da API:
+// Se estiver no navegador, usa o mesmo hostname do browser (localhost ou IP da rede local)
+const getApiUrl = () => {
+  if (typeof window !== 'undefined' && window.location && window.location.hostname) {
+    return `http://${window.location.hostname}:3333`;
+  }
+  return 'http://127.0.0.1:3333';
+};
+
+const API_URL = getApiUrl();
+
+// ============================================================================
+// VERIFICAÇÃO DE SAÚDE DA API (HEALTH CHECK)
+// ============================================================================
+export async function verificarServidor() {
+  try {
+    const resposta = await fetch(`${API_URL}/health`);
+    if (resposta.ok) {
+      return await resposta.json();
+    }
+  } catch {
+    return null;
+  }
+  return null;
+}
 
 // ============================================================================
 // 1. LISTAR (READ) - Busca os registros direto do SQLite via método GET
@@ -19,7 +42,7 @@ export async function buscarDados(tabela) {
       return await resposta.json();
     }
   } catch (erro) {
-    console.error(`Erro ao buscar dados de ${tabela} no SQLite:`, erro);
+    console.warn(`[Aviso SQLite] Servidor em ${API_URL} indisponível para listar ${tabela}.`);
   }
   return [];
 }
@@ -41,7 +64,7 @@ export async function criarRegistro(tabela, item) {
       return await resposta.json();
     }
   } catch (erro) {
-    console.error(`Erro ao criar registro em ${tabela} no SQLite:`, erro);
+    console.error(`[Erro SQLite] Falha ao conectar em ${API_URL}/${tabela} para criar registro.`);
   }
   return null;
 }
@@ -64,7 +87,7 @@ export async function atualizarRegistro(tabela, id, item) {
       return await resposta.json();
     }
   } catch (erro) {
-    console.error(`Erro ao atualizar registro em ${tabela} no SQLite:`, erro);
+    console.error(`[Erro SQLite] Falha ao conectar em ${API_URL}/${tabela}/${id} para atualizar registro.`);
   }
   return null;
 }
@@ -81,12 +104,12 @@ export async function apagarRegistro(tabela, id) {
     });
     return resposta.ok;
   } catch (erro) {
-    console.error(`Erro ao apagar registro em ${tabela} no SQLite:`, erro);
+    console.error(`[Erro SQLite] Falha ao conectar em ${API_URL}/${tabela}/${id} para apagar registro.`);
     return false;
   }
 }
 
-// Aliases mantidos para compatibilidade total com os imports existentes
+// Aliases mantidos para compatibilidade total
 export const buscarDadosSupabase = buscarDados;
 export const criarNoSupabase = criarRegistro;
 export const atualizarNoSupabase = atualizarRegistro;

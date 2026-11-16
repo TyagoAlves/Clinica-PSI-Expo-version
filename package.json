@@ -7,6 +7,9 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "servidor": "node src/banco/servidor.js",
+    "test:qa": "node src/banco/qa.js",
+    "test": "node src/banco/qa.js",
+    "dev": "node -e \"const {spawn}=require('child_process');spawn('node',['src/banco/servidor.js'],{stdio:'inherit'});spawn('npx',['expo','start','--web'],{stdio:'inherit',shell:true});\"",
     "gen:key": "node -e \"console.log(require('crypto').randomBytes(32).toString('base64'))\""
   },
   "dependencies": {

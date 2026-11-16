@@ -20,7 +20,7 @@ import {
 
 export default function App() {
   // Estado que controla qual tela está visível no momento (começa na TelaLogin)
-  const [telaAtual, setTelaAtual] = useState('TelaLogin');
+  const [telaAtual, setTelaAtual] = useState('TelaHome');
 
   // ==========================================================================
   // ESTADOS DO BANCO DE DADOS NA MEMÓRIA DO REACT
@@ -64,6 +64,10 @@ export default function App() {
       alert('Paciente registrado com sucesso!');
       // Navega automaticamente de volta para a lista de pacientes
       setTelaAtual('TelaPacientes');
+    } else {
+      alert(
+        'Aviso: Não foi possível salvar o paciente!\n\nO servidor SQLite (porta 3333) não respondeu.\nAbra um terminal e rode: npm run servidor'
+      );
     }
   }
 
@@ -84,6 +88,8 @@ export default function App() {
       // Atualiza também a ficha do paciente selecionado e volta para a tela de detalhes dele
       setPacienteSelecionado(atualizadoNoBanco);
       setTelaAtual('TelaPaciente');
+    } else {
+      alert('Aviso: Falha ao salvar alterações. O servidor SQLite (porta 3333) está desligado.');
     }
   }
 
@@ -96,6 +102,8 @@ export default function App() {
       setPacientes(pacientes.filter((p) => p.id !== id));
       setPacienteSelecionado(null);
       setTelaAtual('TelaPacientes');
+    } else {
+      alert('Aviso: Falha ao apagar paciente. O servidor SQLite (porta 3333) está desligado.');
     }
   }
 
@@ -111,6 +119,8 @@ export default function App() {
       // Adiciona a sessão recém-criada (com seu novo ID) ao final da lista da agenda
       setSecoes([...secoes, criadaNoBanco]);
       setTelaAtual('TelaAgenda');
+    } else {
+      alert('Aviso: Falha ao agendar seção. O servidor SQLite (porta 3333) está desligado.');
     }
   }
 
@@ -130,6 +140,8 @@ export default function App() {
       setSecoes(novaLista);
       setSecaoSelecionada(atualizadaNoBanco);
       setTelaAtual('TelaAgenda');
+    } else {
+      alert('Aviso: Falha ao atualizar seção. O servidor SQLite (porta 3333) está desligado.');
     }
   }
 
@@ -142,6 +154,8 @@ export default function App() {
       setSecoes(secoes.filter((s) => s.id !== id));
       setSecaoSelecionada(null);
       setTelaAtual('TelaAgenda');
+    } else {
+      alert('Aviso: Falha ao apagar seção. O servidor SQLite (porta 3333) está desligado.');
     }
   }
 

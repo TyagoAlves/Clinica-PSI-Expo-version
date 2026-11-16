@@ -16,7 +16,8 @@ require('dotenv').config({ path: path.resolve(__dirname, '../../.env') });
 const Database = require('better-sqlite3');
 
 // Define endereço, porta e caminho do arquivo do banco SQLite
-const HOST = process.env.HOST || '127.0.0.1';
+// '0.0.0.0' permite conexões locais (localhost / 127.0.0.1) e de dispositivos na mesma rede (Wi-Fi)
+const HOST = process.env.HOST || '0.0.0.0';
 const PORT = Number(process.env.PORT) || 3333;
 const DB_PATH = process.env.DB_PATH || './data/clinica.db';
 
@@ -133,6 +134,19 @@ const servidor = http.createServer(async (req, res) => {
   const url = req.url || '/';
 
   try {
+    // ========================================================================
+    // ROTA DE SAÚDE (HEALTH CHECK / QA)
+    // ========================================================================
+    if (url === '/health' && req.method === 'GET') {
+      return responderJson(res, 200, {
+        status: 'ok',
+        banco: 'sqlite',
+        arquivo: DB_PATH,
+        tabelas: ['pacientes', 'secoes'],
+        timestamp: new Date().toISOString(),
+      });
+    }
+
     // ========================================================================
     // ROTAS: PACIENTES (CRUD EM SQLITE)
     // ========================================================================
