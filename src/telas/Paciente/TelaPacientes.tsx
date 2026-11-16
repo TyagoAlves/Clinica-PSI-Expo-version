@@ -97,12 +97,12 @@ const styles = StyleSheet.create({
     maxWidth: 420,  //Largura maxima
   },
   titulo: {
-    fontSize: 26,  //Tamanho do texto "Painel"
+    fontSize: 26,  //Tamanho do texto 
     fontWeight: 'bold',  //Negrito
     color: '#1E293B',  //ardósia noturna
   },
   subtitulo: {
-    fontSize: 15,  //Tamanho do texto "Visão geral da clínica"
+    fontSize: 15,  //Tamanho do texto 
     color: '#64748B',  //azul ardósia
     marginBottom: 16,  //espaçamento entre o texto e o item abaixo
   },
