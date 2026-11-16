@@ -19,7 +19,7 @@ export default function TelaAgenda({ //  - os dados são salvos e recupecuperado
 
   return (
     <>
-      {/*<ScrollView contentContainerStyle={styles.tela}> Permite que a tela terá uma barra de scroll para ver itens fora da tela */}
+      {/*Define um ScrollView para permitir rolagem da tela, com estilo definido em styles.tela*/}
       <ScrollView contentContainerStyle={styles.tela}>
       {/*<View style={styles.container} O componente View chama o estilo .container que esta no final da pagina*/}
         <View style={styles.container}>
@@ -148,8 +148,8 @@ export default function TelaAgenda({ //  - os dados são salvos e recupecuperado
 const styles = StyleSheet.create({
   tela: {
     flexGrow: 1,  //o conteúdo cresce pra preencher
-    backgroundColor: '#F1F3F8',  //Cor de fundo da tela, cor branca meio azulada
-    alignItems: 'center',  //Alinhamento eixo cruzado
+    backgroundColor: '#f8f1f1', //Cor de fundo da tela, cor rosa pálido
+    alignItems: 'center',  //centraliza o conteúdo no eixo cruzado (horizontal)
     padding: 20,  //espaçamento interno
   },
   container: {
@@ -169,7 +169,7 @@ const styles = StyleSheet.create({
   barraDias: {
     flexDirection: 'row',  //Alinhamento horizontal
     justifyContent: 'space-between',  //Espaçamento entre os itens
-    alignItems: 'center',  //Alinhamento vertical
+    alignItems: 'center',  //centraliza o conteúdo no eixo cruzado (horizontal),  
     backgroundColor: '#FFFFFF',  //Cor de fundo branca
     padding: 12,  //espaçamento interno
     borderRadius: 10,  //Arredondamento de borda
@@ -237,11 +237,11 @@ const styles = StyleSheet.create({
     backgroundColor: '#4F46E5',  //Azul Majorelle
     padding: 12,  //espaçamento interno
     borderRadius: 8,  //Arredondamento de borda
-    alignItems: 'center',  //Alinhamento do botão
+    alignItems: 'center',  //centraliza o conteúdo no eixo cruzado (horizontal),  
     marginBottom: 16,  //espaçamento entre o botão e o item abaixo
   },
   textoBotaoPrimario: {
-    color: '#FFFFFF',  //Cor de fundo branca
+    color: '#FFFFFF',  //cor do texto branca
     fontSize: 15,  //Tamanho do texto 
     fontWeight: 'bold',  //Negrito
   },
@@ -250,7 +250,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#E0E7FF',  //Azul muito claro
     padding: 10,  //espaçamento interno
     borderRadius: 8,  //Arredondamento de borda
-    alignItems: 'center',  //Alinhamento
+    alignItems: 'center',  //centraliza o conteúdo no eixo cruzado (horizontal),  
   },
   textoBotaoAcao: {
     color: '#4F46E5',  //Azul Majorelle
@@ -261,7 +261,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#E2E8F0',  //azul acinzentado claro
     padding: 12,  //espaçamento interno
     borderRadius: 8,  //Arredondamento de borda
-    alignItems: 'center',  //Alinhamento do texto
+    alignItems: 'center',  //centraliza o conteúdo no eixo cruzado (horizontal),  
     marginTop: 8,  //espaçamento entre o botão e o item abaixo
   },
   textoBotaoVoltar: {

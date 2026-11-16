@@ -106,8 +106,8 @@ export default function TelaNovaSecao({ aoSalvar, aoVoltar }) {  //Função que 
 const styles = StyleSheet.create({
   tela: {
     flexGrow: 1,  //o conteúdo cresce pra preencher
-    backgroundColor: '#F1F3F8',  //Cor de fundo da tela, cor branca meio azulada
-    alignItems: 'center',  //Alinhamento eixo cruzado
+    backgroundColor: '#f8f1f1', //Cor de fundo da tela, cor rosa pálido
+    alignItems: 'center',  //centraliza o conteúdo no eixo cruzado (horizontal)"
     justifyContent: 'center',  //Alinhamento eixo principal
     padding: 20,  //Espaçamento interno da tela
   },

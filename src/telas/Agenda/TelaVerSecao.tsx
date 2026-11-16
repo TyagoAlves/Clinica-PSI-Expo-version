@@ -85,9 +85,9 @@ export default function TelaVerSecao({ secao, aoVoltar, aoEditar }) {// Define o
 
 const styles = StyleSheet.create({
   tela: {
-    flex: 1,  //o conteúdo cresce pra preencher
-    backgroundColor: '#F1F3F8',  //Cor de fundo da tela, cor branca meio azulada
-    alignItems: 'center',  //Alinhamento eixo cruzado
+    flex: 1,  //ocupa todo o espaço disponível no pai
+    backgroundColor: '#f8f1f1', //Cor de fundo da tela, cor rosa pálido
+    alignItems: 'center',  //centraliza o conteúdo no eixo cruzado (horizontal)"
     justifyContent: 'center',  //Alinhamento eixo principal
     padding: 20,  //Espaçamento interno da tela
   },
@@ -116,7 +116,7 @@ const styles = StyleSheet.create({
     fontSize: 16,  //Tamanho do texto do valor, 16 pixels
     color: '#1E293B',  //Cor do texto do valor, ardósia noturna
     marginBottom: 8,  //Espaçamento inferior do valor, 8 pixels
-    backgroundColor: '#F8FAFC',  //Cor de fundo do valor, azul acinzentado muito claro
+    backgroundColor: '#F8FAFC',  //cor do texto do valor, azul acinzentado muito claro
     padding: 10,  //Espaçamento interno do valor, 10 pixels
     borderRadius: 8,  //Arredondamento dos cantos do valor, 8 pixels
   },
@@ -129,7 +129,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,  //Espaçamento inferior do botão "Salvar Seção", 10 pixels
   },
   textoBotaoPrimario: {
-    color: '#FFFFFF',  //Cor de fundo branca
+    color: '#FFFFFF',  //cor do texto branca
     fontSize: 15,  //Tamanho do texto 
     fontWeight: 'bold',  //Negrito
   },
