@@ -1,30 +1,21 @@
 import { View, Text, Pressable, StyleSheet, ScrollView } from 'react-native';
-{/*
-  export default function TelaAgenda({ secoes = [], aoVoltar, verSecao, editarSecao, novaSecao }) {
-  A função TelaAgenda é um componente funcional do React Native que recebe as seguintes props:
-  - os dados são salvos e recupecuperados do banco de dados Supabase que é configurado no arquivo bancoDados.js, e são passados como props para o componente TelaAgenda.
-  - secoes: um array de objetos representando as seções agendadas. Cada objeto deve conter informações como id, horário, duração, data, paciente, serviço e observações.
-  - aoVoltar: uma função que é chamada quando o botão "Voltar ao Painel" é pressionado.
-  - verSecao: uma função que é chamada quando o botão "Ver Seção" de uma seção específica é pressionado. Recebe a seção como argumento.
-  - editarSecao: uma função que é chamada quando o botão "Editar Seção" de uma seção específica é pressionado. Recebe a seção como argumento.
-  - novaSecao: uma função que é chamada quando o botão "+ Nova Seção" é pressionado. Abre um formulário para criar uma nova seção na agenda.
-  */}
-export default function TelaAgenda({
-  secoes = [],
-  aoVoltar,
-  verSecao,
-  editarSecao,
-  novaSecao,
+
+export default function TelaAgenda({ //  - os dados são salvos e recupecuperados do banco de dados Supabase que é configurado no arquivo bancoDados.js, e são passados como props para o componente TelaAgenda.
+  secoes = [],  //- secoes: um array de objetos representando as seções agendadas. Cada objeto deve conter informações como id, horário, duração, data, paciente, serviço e observações.
+  aoVoltar,  //- aoVoltar: uma função que é chamada quando o botão "Voltar ao Painel" é pressionado.
+  verSecao,  //- verSecao: uma função que é chamada quando o botão "Ver Seção" de uma seção específica é pressionado. Recebe a seção como argumento.
+  editarSecao,  //- editarSecao: uma função que é chamada quando o botão "Editar Seção" de uma seção específica é pressionado. Recebe a seção como argumento.
+  novaSecao,  //- novaSecao: uma função que é chamada quando o botão "+ Nova Seção" é pressionado. Abre um formulário para criar uma nova seção na agenda.
 }) {
   // Pega a data de hoje formatada no padrão brasileiro (dd/mm/aaaa)
   // A função toLocaleDateString('pt-BR') formata a data no padrão brasileiro, que é dia/mês/ano.
   const dataHoje = new Date().toLocaleDateString('pt-BR');
-  // Pega a data de amanhã formatada no padrão brasileiro (dd/mm/aaaa)
-  // A função Date.now() retorna o timestamp atual em milissegundos, e somando 24 * 60 * 60 * 1000 (um dia em milissegundos) obtemos a data de amanhã.
-  const dataAmanha = new Date(Date.now() + 24 * 60 * 60 * 1000).toLocaleDateString('pt-BR');
-  // Pega a data de ontem formatada no padrão brasileiro (dd/mm/aaaa)
-  // A função Date.now() retorna o timestamp atual em milissegundos, e subtraindo 24 * 60 * 60 * 1000 (um dia em milissegundos) obtemos a data de ontem.
-  const dataOntem = new Date(Date.now() - 24 * 60 * 60 * 1000).toLocaleDateString('pt-BR');
+  const d = new Date(); // Cria um objeto Date com a data atual
+  d.setDate(d.getDate() + 1);  // Adiciona um dia à data atual para obter a data de amanhã
+  const dataAmanha = d.toLocaleDateString('pt-BR'); // Formata a data de amanhã no padrão brasileiro (dd/mm/aaaa)
+  const dOntem = new Date();  // Cria um objeto Date com a data atual
+  dOntem.setDate(dOntem.getDate() - 1);  // Subtrai um dia da data atual para obter a data de ontem
+  const dataOntem = dOntem.toLocaleDateString('pt-BR');   // Formata a data de ontem no padrão brasileiro (dd/mm/aaaa)
 
   return (
     <>
@@ -41,7 +32,7 @@ export default function TelaAgenda({
           {/*A barra de dias mostra "Ontem", "Hoje" e "Amanhã", com o dia atual destacado.*/}
           <View style={styles.barraDias}>
             {/*<Text style={styles.diaInativo}>Ontem</Text>  O componente Text chama o estilo .diaInativo que esta no final da pagina*/}
-            {/*A data de ontem não é exibida, mas poderia ser obtida subtraindo 24 * 60 * 60 * 1000 (um dia em milissegundos) do timestamp atual e formatando a data no padrão brasileiro.*/}
+            {/*o valoe de dataOntem é obtido através da const dOntem que é criada e formatada no padrão brasileiro*/}
             <Text style={styles.diaInativo}>Ontem ({dataOntem})</Text>
             {/*<Text style={styles.diaAtivo}>Hoje ({dataHoje})</Text>  O componente Text chama o estilo .diaAtivo que esta no final da pagina*/}
             {/*dataHoje faz a formatação da data no padrão brasileiro e pega esse valor da const dataHoje definida no início da função*/}
@@ -59,57 +50,49 @@ export default function TelaAgenda({
           <Pressable style={styles.botaoPrimario} onPress={novaSecao}>
             <Text style={styles.textoBotaoPrimario}>+ Nova Seção</Text>
           </Pressable>
-          {/*
-          {secoes.length === 0 ? ( //Se não houver seções agendadas, exibe uma mensagem informando que não há seções agendadas.
-            <View style={styles.cartao}> //O componente View chama o estilo .cartao que esta no final da pagina
-              <Text style={styles.textoVazio}>Nenhuma seção agendada.</Text> //O componente Text chama o estilo .textoVazio que esta no final da pagina
-            </View>
-          ) : ( //Se houver seções agendadas, exibe uma lista de cartões com as informações de cada seção.
-            secoes.map((secao) => ( //O método map() é usado para percorrer o array de seções e renderizar um cartão para cada seção.
-            secao.id é usado como chave única para cada cartão, garantindo que o React possa identificar corretamente cada elemento da lista.
-              <View key={secao.id} style={styles.cartao}> //O componente View chama o estilo .cartao que esta no final da pagina  
-               <View style={styles.linhaTopo}> //O componente View chama o estilo .linhaTopo que esta no final da pagina
-                  <Text style={styles.horario}> //O componente Text chama o estilo .horario que esta no final da pagina
-                  secao.horario é a hora da seção, e secao.duracao é a duração da seção. Ambos são exibidos no formato "horário (duração)".
-                  secao.data é a data da seção, exibida no formato "dd/mm/aaaa".
-                  essa informação vem do objeto secao que é passado como parâmetro para a função map().
-                    {secao.horario} ({secao.duracao}) //Exibe o horário e a duração da seção.
-                  </Text>
-                  <Text style={styles.data}> //O componente Text chama o estilo .data que esta no final da pagina
-                    {secao.data} //Exibe a data da seção buscada no banco de dados Supabase e passada como parâmetro para a função map().
-                  </Text>
-                </View>
-                <Text style={styles.nomePaciente}> //O componente Text chama o estilo .nomePaciente que esta no final da pagina
-                  {secao.paciente} //Exibe o nome do paciente da seção buscada no banco de dados Supabase e passada como parâmetro para a função map().
-                </Text>    
-                <Text style={styles.servico}> //O componente Text chama o estilo .servico que esta no final da pagina
-                  {secao.servico} //Exibe o serviço da seção buscada no banco de dados Supabase e passada como parâmetro para a função map().
-                </Text>   
-
-                Acho que esse texto abaixo esta errado ou a função map() não esta funcionando corretamente, pois não exibe as observações da seção buscada no banco de dados Supabase e passada como parâmetro para a função map().
-
-                {secao.observacoes ? ( //Se houver observações para a seção
-                  <Text style={styles.observacoes}> //O componente Text chama o estilo .observacoes que esta no final da pagina
-                    Obs: {secao.observacoes} //Exibe as observações da seção buscada no banco de dados Supabase e passada como parâmetro para a função map().       
-          */}
+          {/*{secoes.length === 0 ? ( Se não houver seções agendadas, exibe uma mensagem informando que não há seções agendadas.*/}
           {secoes.length === 0 ? (
+            <>
+            {/*<View style={styles.cartao}> O componente View chama o estilo .cartao que esta no final da pagina*/}
             <View style={styles.cartao}>
+              {/*<Text style={styles.textoVazio}>Nenhuma seção agendada.</Text> O componente Text chama o estilo .textoVazio que esta no final da pagina*/}
               <Text style={styles.textoVazio}>Nenhuma seção agendada.</Text>
-            </View>
+            </View>  {/*fecha o componente View do cartão*/}
+            {/* ) : ( Se houver seções agendadas, exibe uma lista de cartões com as informações de cada seção.*/}
+            </>
           ) : (
+            //O método map() é usado para percorrer o array de seções e renderizar um cartão para cada seção.
             secoes.map((secao) => (
-              <View key={secao.id} style={styles.cartao}>
-                <View style={styles.linhaTopo}>
+              //secao.id é usado como chave única para cada cartão, garantindo que o React possa identificar corretamente cada elemento da lista.
+              //O componente View chama o estilo .cartao que esta no final da pagina  
+              <View key={secao.id} style={styles.cartao}>   
+                <>
+                {/*O componente View chama o estilo .linhaTopo que esta no final da pagina*/}
+                <View style={styles.linhaTopo}> 
+                  {/*O componente Text chama o estilo .horario que esta no final da pagina*/}
                   <Text style={styles.horario}>
+                    {/*secao.horario é a hora da seção, e secao.duracao é a duração da seção. Ambos são exibidos no formato "horário (duração)".*/}
+                    {/*secao.data é a data da seção, exibida no formato "dd/mm/aaaa".*/}
                     {secao.horario} ({secao.duracao})
+                    {/*essa informação vem do objeto secao que é passado como parâmetro para a função map().*/}
                   </Text>
-                  <Text style={styles.data}>{secao.data}</Text>
+                  {/*O componente Text chama o estilo .data que esta no final da pagina*/}
+                  {/*Exibe a data da seção buscada no banco de dados Supabase e passada como parâmetro para a função map().*/}
+                  <Text style={styles.data}>{secao.data}</Text> 
                 </View>
-
+                {/*O componente Text chama o estilo .nomePaciente que esta no final da pagina*/}
+                {/*Exibe o nome do paciente da seção buscada no banco de dados Supabase e passada como parâmetro para a função map().*/}
                 <Text style={styles.nomePaciente}>{secao.paciente}</Text>
+                  {/*O componente Text chama o estilo .servico que esta no final da pagina*/}
+                  {/*Exibe o serviço da seção buscada no banco de dados Supabase e passada como parâmetro para a função map().*/}
                 <Text style={styles.servico}>{secao.servico}</Text>
-                {secao.observacoes ? (
+                {secao.observacoes ? (  //Se houver observações para a seção
+                  <>
+                  {/*O componente Text chama o estilo .observacoes que esta no final da pagina*/}
+                  {/*Exibe as observações da seção buscada no banco de dados Supabase e passada como parâmetro para a função map().*/}  
+                  {/*  Acho que esse texto abaixo esta errado ou a função map() não esta funcionando corretamente, pois não exibe as observações da seção buscada no banco de dados Supabase e passada como parâmetro para a função map().*/}
                   <Text style={styles.observacoes}>Obs: {secao.observacoes}</Text>
+                  </>
                 ) : null}
                 {/*<View style={styles.linhaBotoes}> O componente View chama o estilo .linhaBotoes que esta no final da pagina
                 </View>*/}
@@ -142,6 +125,7 @@ export default function TelaAgenda({
                   {/*Fechamento do componente View que contém os botões de ação */}
                 </View>
                 {/*Fechamento do componente View que contém a seção */}
+                </>
               </View>
             ))
           )}
@@ -200,7 +184,7 @@ const styles = StyleSheet.create({
   diaAtivo: {
     fontSize: 14,  //Tamanho do texto 
     fontWeight: 'bold',  //Negrito
-    color: '#4F46E5',  //Cor de fundo do botão
+    color: '#4F46E5',  //Azul Majorelle
   },
   cartao: {
     backgroundColor: '#FFFFFF',  //Cor de fundo branca
