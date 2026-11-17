@@ -5,12 +5,12 @@ export default function TelaHome({
   aoSair,  //ao clicar no botão "Sair" troca para a telaLogin
   aoAgenda,  //ao clicar no botão "Abrir Agenda" troca para a telaAgenda
   verPacientes,  //ao clicar no botão "Ver Pacientes" troca para a telaPacientes
-  totalPacientes = 0,  //calculo de numeros de pacientes
+  totalPacientes = 0,  // quantidade total recebida via prop
   totalSecoes = 0,  //calculo de numeros de seções
 }) {
   return (
     <>  {/* agrupa elementos sem criar um nó extra no DOM.*/} 
-    {/*<ScrollView contentContainerStyle={styles.tela}> Permite que a tela terá uma barra de scroll para ver itens fora da tela */}
+    {/*Define um ScrollView para permitir rolagem da tela, com estilo definido em styles.tela*/}
     <ScrollView contentContainerStyle={styles.tela}>
       {/*<View style={styles.container} O componente View chama o estilo .container que esta no final da pagina*/}
       <View style={styles.container}>
@@ -75,7 +75,7 @@ export default function TelaHome({
         <Pressable style={styles.botaoSair} onPress={aoSair}>
           <Text style={styles.textoBotaoSair}>Sair da conta</Text>
         </Pressable>
-        {/*Fechamento da View cartao*/}
+        {/*Fechamento da View container*/}
       </View>
       {/*Fechamento da ScrollView tela*/}
     </ScrollView>
@@ -85,9 +85,9 @@ export default function TelaHome({
 
 const styles = StyleSheet.create({
   tela: {
-    flexGrow: 1,
-    backgroundColor: '#f8f1f1', //Cor de fundo da tela, cor branca meio azulada
-    alignItems: 'center', //Alinhamento eixo cruzado
+    flexGrow: 1,  //o conteúdo cresce pra preencher
+    backgroundColor: '#f8f1f1', //Cor de fundo da tela, cor rosa pálido
+    alignItems: 'center',  //centraliza o conteúdo no eixo cruzado (horizontal), 
     justifyContent: 'center', //Alinhamento eixo principal
     padding: 20,  //espaçamento interno
   },
@@ -128,7 +128,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#4F46E5', //Cor de fundo do botão "Entrar"
     padding: 12,  //espaçamento interno (define o tamanho do botão)
     borderRadius: 8,  //Arredondamento de borda
-    alignItems: 'center',  //Alinhamento do texto
+    alignItems: 'center',  //centraliza o conteúdo no eixo cruzado (horizontal),  
     marginBottom: 8, //espaçamento entre o botão e o item abaixo
   },
   textoBotaoPrimario: {
@@ -140,7 +140,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#E0E7FF',  //Azul muito claro
     padding: 12,  //espaçamento interno (define o tamanho do botão)
     borderRadius: 8,  //Arredondamento de borda
-    alignItems: 'center',  //Alinhamento do texto
+    alignItems: 'center',  //centraliza o conteúdo no eixo cruzado (horizontal),  
   },
   textoBotaoSecundario: {
     color: '#4F46E5',  //Cor do texto do botão "+ Novo Paciente", cor Majorelle Blue
@@ -151,7 +151,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#E2E8F0',  //azul acinzentado claro
     padding: 12,  //espaçamento interno (define o tamanho do botão)
     borderRadius: 8,  //Arredondamento de borda
-    alignItems: 'center',  //Alinhamento do texto
+    alignItems: 'center',  //centraliza o conteúdo no eixo cruzado (horizontal),  
     marginTop: 8,  //espaçamento entre o botão e o item acima
   },
   textoBotaoSair: {

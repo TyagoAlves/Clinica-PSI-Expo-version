@@ -70,9 +70,9 @@ export default function TelaLogin({ aoEntrar }) {
 
 const styles = StyleSheet.create({
   tela: {
-    flex: 1, //preenche todo o espaço disponível
-    backgroundColor: '#f8f1f1', //Cor de fundo da tela, cor branca meio azulada
-    alignItems: 'center', //Alinhamento eixo cruzado
+    flex: 1, //ocupa todo o espaço disponível no pai
+    backgroundColor: '#f8f1f1', //Cor de fundo da tela, cor rosa pálido
+    alignItems: 'center',  //centraliza o conteúdo no eixo cruzado (horizontal), 
     justifyContent: 'center', //Alinhamento eixo principal
     padding: 20,
   },
@@ -116,7 +116,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#4F46E5', //Cor de fundo do botão "Entrar"
     padding: 12,  //espaçamento interno (define o tamanho do botão)
     borderRadius: 8,  //Arredondamento de borda
-    alignItems: 'center',  //Alinhamento do texto
+    alignItems: 'center',  //centraliza o conteúdo no eixo cruzado (horizontal),  
     marginTop: 8, //espaçamento acima do botão
   },
   textoBotaoPrimario: {

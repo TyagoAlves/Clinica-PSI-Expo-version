@@ -73,9 +73,9 @@ export default function TelaPaciente({ paciente, aoVoltar, aoEditar }) {
 
 const styles = StyleSheet.create({
   tela: {
-    flex: 1,  //o conteúdo cresce pra preencher
-    backgroundColor: '#f8f1f1', //Cor de fundo da tela, cor branca meio azulada
-    alignItems: 'center',  //Alinhamento eixo cruzado
+    flex: 1,  //ocupa todo o espaço disponível no pai
+    backgroundColor: '#f8f1f1', //Cor de fundo da tela, cor rosa pálido
+    alignItems: 'center',  //centraliza o conteúdo no eixo cruzado (horizontal),  
     justifyContent: 'center',  //Alinhamento eixo principal
     padding: 20,  //espaçamento interno
   },
@@ -112,7 +112,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#4F46E5',  //Cor de fundo do botão
     padding: 12,  //espaçamento interno
     borderRadius: 8,  //Arredondamento de borda
-    alignItems: 'center',  //Alinhamento do texto
+    alignItems: 'center',  //centraliza o conteúdo no eixo cruzado (horizontal),  
     marginTop: 14,  //espaçamento entre o texto e o item acima
     marginBottom: 10,  //espaçamento entre o botão e o item abaixo
   },
@@ -125,7 +125,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#E2E8F0',  //azul acinzentado claro
     padding: 12,  //espaçamento interno (define o tamanho do botão)
     borderRadius: 8,  //Arredondamento de borda
-    alignItems: 'center',  //Alinhamento do texto
+    alignItems: 'center',  //centraliza o conteúdo no eixo cruzado (horizontal),  
   },
   textoBotaoVoltar: {
     color: '#334155',  //Cor do texto do botão "Voltar", azul slate escuro e dessaturado
