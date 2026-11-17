@@ -1,5 +1,5 @@
 // ponto de partida do app, foi registrado como raiz em index.js.
-// a função desse código é decidir qual tela mostrar ao usuário,
+// a função desse código é decidir qual tela mostrar ao usuário (sem login aceito pelo servidor, só aparece a TelaLogin),
 // e guardar na memória os dados que vêm do banco SQLite (pacientes e seções) pra entregar pras telas.
 
 // Quem faz o quê aqui dentro:
@@ -24,12 +24,16 @@ import {
   criarRegistro,
   atualizarRegistro,
   apagarRegistro,
+  fazerLogin, // confere e-mail e senha no servidor (POST /login) e guarda o token
+  fazerLogout, // invalida o token no servidor (POST /logout)
 } from './src/banco/bancoDados';
 
 //"export default" faz esta função ser a "principal" do arquivo, a que o "index,js" importa.
 export default function App() {
   // Estado que controla qual tela está visível no momento (começa na TelaLogin)
-  const [telaAtual, setTelaAtual] = useState('TelaHome');
+  const [telaAtual, setTelaAtual] = useState('TelaLogin');
+  // true só depois que o servidor aceitou o e-mail e a senha. enquanto for false, só a TelaLogin aparece.
+  const [logado, setLogado] = useState(false);
 
   // ==========================================================================
   // ESTADOS DO BANCO DE DADOS NA MEMÓRIA DO REACT
@@ -42,10 +46,12 @@ export default function App() {
   const [secaoSelecionada, setSecaoSelecionada] = useState(null); // Sessão clicada para ver ou editar
 
   // ==========================================================================
-  // 1. LEITURA INICIAL (READ) - Carrega os dados do SQLite assim que o App abre
-  // O array vazio [] no final garante que o useEffect rode apenas 1 vez ao iniciar
+  // 1. LEITURA INICIAL (READ) - Carrega os dados do SQLite assim que o login é aceito
+  // O [logado] no final faz o useEffect rodar de novo sempre que 'logado' mudar
+  // (antes do login o servidor recusa os dados, então só carrega quando logado for true)
   // ==========================================================================
   useEffect(() => {
+    if (!logado) return;
     async function carregarDoBanco() {
       // Faz GET /pacientes no servidor, aguarda (await) a lista do SQLite e salva no estado 'pacientes'
       const listaPacientes = await buscarDados('pacientes');
@@ -56,7 +62,33 @@ export default function App() {
       setSecoes(listaSecoes);
     }
     carregarDoBanco();
-  }, []);
+  }, [logado]);
+
+  // ==========================================================================
+  // LOGIN E LOGOUT
+  // ==========================================================================
+
+  // ENTRAR: a TelaLogin manda o que foi digitado, o servidor confere e devolve um token ou um erro
+  async function entrarNoApp(email, senha) {
+    const resultado = await fazerLogin(email, senha);
+    if (resultado.token) {
+      setLogado(true);
+      setTelaAtual('TelaHome');
+    } else {
+      alert(`Aviso: ${resultado.erro}`);
+    }
+  }
+
+  // SAIR: invalida o token no servidor, limpa os dados da memória e volta pro login
+  async function sairDoApp() {
+    await fazerLogout();
+    setLogado(false);
+    setPacientes([]);
+    setSecoes([]);
+    setPacienteSelecionado(null);
+    setSecaoSelecionada(null);
+    setTelaAtual('TelaLogin');
+  }
 
   // ==========================================================================
   // 2. FUNÇÕES CRUD DE PACIENTES (CRIAR, EDITAR E APAGAR NO SQLITE)
@@ -177,8 +209,8 @@ export default function App() {
   return (
     <>
       <StatusBar style="auto" />
-      {telaAtual === 'TelaLogin' ? (
-        <TelaLogin aoEntrar={() => setTelaAtual('TelaHome')} />
+      {!logado || telaAtual === 'TelaLogin' ? (
+        <TelaLogin aoEntrar={entrarNoApp} />
       ) : telaAtual === 'TelaNovoPaciente' ? (
         <TelaNovoPaciente
           aoSalvar={adicionarPaciente}
@@ -243,7 +275,7 @@ export default function App() {
         <TelaHome
           totalPacientes={pacientes.length}
           totalSecoes={secoes.length}
-          aoSair={() => setTelaAtual('TelaLogin')}
+          aoSair={sairDoApp}
           aoNovo={() => setTelaAtual('TelaNovoPaciente')}
           aoAgenda={() => setTelaAtual('TelaAgenda')}
           verPacientes={() => setTelaAtual('TelaPacientes')}

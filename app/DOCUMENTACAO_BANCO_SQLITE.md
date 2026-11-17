@@ -74,6 +74,31 @@ CREATE TABLE IF NOT EXISTS secoes (
 ```
 - Registra cada sessão agendada com paciente, serviço, data, horário, duração e observações opcionais.
 
+### 3.3. Tabelas de login: `usuarios` e `sessoes`
+```sql
+CREATE TABLE IF NOT EXISTS usuarios (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  email TEXT NOT NULL UNIQUE,
+  senha_hash TEXT NOT NULL,
+  salt TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS sessoes (
+  token_hash TEXT PRIMARY KEY,
+  usuario_id INTEGER NOT NULL,
+  expira_em INTEGER NOT NULL
+);
+```
+- `usuarios`: quem pode entrar. A senha **não** é salva em texto: só o hash `scrypt` e o `salt`. Na primeira vez que o servidor sobe sem nenhum usuário, ele cria o usuário fixo definido em `LOGIN_EMAIL` / `LOGIN_SENHA` no `.env` (padrão: `admin@clinica.com.br` / `123456`).
+- `sessoes`: logins ativos. Cada login gera um token aleatório; o banco guarda só o hash (`sha256`) dele e até quando vale (`SESSAO_HORAS`, padrão 12h).
+
+### 3.4. Como o login funciona
+1. A `TelaLogin` manda e-mail e senha → `fazerLogin()` em `bancoDados.js` → `POST /login`.
+2. Se a senha confere, o servidor devolve `{ token }`; senão, `401 { erro: 'E-mail ou senha incorretos' }`.
+3. O `bancoDados.js` guarda o token na memória e envia `Authorization: Bearer <token>` em todas as requisições.
+4. `/pacientes` e `/secoes` respondem `401` sem um token válido. Só `/health`, `/login` e `/logout` são públicas.
+5. "Sair da conta" chama `POST /logout`, que apaga a sessão. Recarregar o app também pede login de novo.
+
 ---
 
 ## 4. O Servidor e as Consultas SQL (`src/banco/servidor.js`)

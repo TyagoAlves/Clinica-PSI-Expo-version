@@ -57,7 +57,8 @@ export default function TelaLogin({ aoEntrar }) {
           <Text style={styles.textoBotaoPrimario}>Entrar</Text> O componente Text chama o estilo .textoBotaoPrimario que esta no final da pagina
         </Pressable> Fechamento do Pressable
         */}
-        <Pressable style={styles.botaoPrimario} onPress={aoEntrar}>
+        {/*onPress={() => aoEntrar(email, senha)} manda o e-mail e a senha digitados pro App conferir no servidor*/}
+        <Pressable style={styles.botaoPrimario} onPress={() => aoEntrar(email, senha)}>
           <Text style={styles.textoBotaoPrimario}>Entrar</Text>
         </Pressable>
         {/*Fechamento da View cartao*/}

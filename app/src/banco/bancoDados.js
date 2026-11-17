@@ -17,6 +17,45 @@ const getApiUrl = () => {
 const API_URL = getApiUrl();
 
 // ============================================================================
+// LOGIN: o token recebido do servidor fica guardado aqui (na memória do app)
+// e vai junto em toda requisição no cabeçalho "Authorization: Bearer <token>"
+// ============================================================================
+let tokenSessao = null;
+
+function cabecalhos(extra = {}) {
+  return tokenSessao ? { ...extra, Authorization: `Bearer ${tokenSessao}` } : extra;
+}
+
+// ENTRAR (POST /login) - devolve { token } se deu certo, ou { erro } com a mensagem
+export async function fazerLogin(email, senha) {
+  try {
+    const resposta = await fetch(`${API_URL}/login`, {
+      method: 'POST',
+      headers: cabecalhos({ 'Content-Type': 'application/json' }),
+      body: JSON.stringify({ email, senha }),
+    });
+    const dados = await resposta.json();
+    if (resposta.ok) {
+      tokenSessao = dados.token;
+      return dados;
+    }
+    return { erro: dados.erro || 'Não foi possível entrar.' };
+  } catch (erro) {
+    return { erro: `O servidor SQLite (porta 3333) não respondeu.\nAbra um terminal e rode: npm run servidor` };
+  }
+}
+
+// SAIR (POST /logout) - avisa o servidor para invalidar o token e esquece ele aqui no app
+export async function fazerLogout() {
+  try {
+    await fetch(`${API_URL}/logout`, { method: 'POST', headers: cabecalhos() });
+  } catch (erro) {
+    // Mesmo sem servidor, o app esquece o token e volta para o login
+  }
+  tokenSessao = null;
+}
+
+// ============================================================================
 // VERIFICAÇÃO DE SAÚDE DA API (HEALTH CHECK)
 // ============================================================================
 export async function verificarServidor() {
@@ -37,7 +76,7 @@ export async function verificarServidor() {
 // ============================================================================
 export async function buscarDados(tabela) {
   try {
-    const resposta = await fetch(`${API_URL}/${tabela}`);
+    const resposta = await fetch(`${API_URL}/${tabela}`, { headers: cabecalhos() });
     if (resposta.ok) {
       return await resposta.json();
     }
@@ -56,7 +95,7 @@ export async function criarRegistro(tabela, item) {
   try {
     const resposta = await fetch(`${API_URL}/${tabela}`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: cabecalhos({ 'Content-Type': 'application/json' }),
       body: JSON.stringify(item),
     });
 
@@ -79,7 +118,7 @@ export async function atualizarRegistro(tabela, id, item) {
   try {
     const resposta = await fetch(`${API_URL}/${tabela}/${id}`, {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
+      headers: cabecalhos({ 'Content-Type': 'application/json' }),
       body: JSON.stringify(item),
     });
 
@@ -101,6 +140,7 @@ export async function apagarRegistro(tabela, id) {
   try {
     const resposta = await fetch(`${API_URL}/${tabela}/${id}`, {
       method: 'DELETE',
+      headers: cabecalhos(),
     });
     return resposta.ok;
   } catch (erro) {
