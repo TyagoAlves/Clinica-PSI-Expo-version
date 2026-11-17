@@ -37,7 +37,7 @@ export default function TelaEditarPaciente({
 
   return (
     <>
-    {/*<ScrollView contentContainerStyle={styles.tela}> Permite que a tela terá uma barra de scroll para ver itens fora da tela */}
+    {/*Define um ScrollView para permitir rolagem da tela, com estilo definido em styles.tela */}
     <ScrollView contentContainerStyle={styles.tela}>
       {/*<View style={styles.cartao} O componente View chama o estilo .cartao que esta no final da pagina*/}
       <View style={styles.cartao}>
@@ -149,8 +149,8 @@ export default function TelaEditarPaciente({
 const styles = StyleSheet.create({
   tela: {
     flexGrow: 1,  //o conteúdo cresce pra preencher
-    backgroundColor: '#f8f1f1', //Cor de fundo da tela, cor branca meio azulada
-    alignItems: 'center', //Alinhamento eixo cruzado
+    backgroundColor: '#f8f1f1', //Cor de fundo da tela, cor rosa pálido
+    alignItems: 'center', //centraliza o conteúdo no eixo cruzado (horizontal)"
     justifyContent: 'center',  //Alinhamento eixo principal
     padding: 20,  //espaçamento interno
   },
@@ -188,7 +188,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#4F46E5',  //Azul Majorelle
     padding: 12,  //espaçamento interno
     borderRadius: 8,  //Arredondamento de borda
-    alignItems: 'center',  //Alinhamento eixo cruzado
+    alignItems: 'center',  //centraliza o conteúdo no eixo cruzado (horizontal), 
     marginTop: 6,  //Espaçamento entre o botão e o item acima
     marginBottom: 10,  //Espaçamento entre o botão e o item abaixo
   },
@@ -201,7 +201,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FEE2E2',  //rosa pálido
     padding: 12,  //espaçamento interno
     borderRadius: 8,  //Arredondamento de borda
-    alignItems: 'center',  //Alinhamento eixo cruzado
+    alignItems: 'center',  //centraliza o conteúdo no eixo cruzado (horizontal), 
     marginBottom: 10,  //Espaçamento entre o botão e o item abaixo
   },
   textoBotaoPerigo: {
@@ -213,7 +213,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#E2E8F0',  //azul acinzentado claro
     padding: 12,  //espaçamento interno
     borderRadius: 8,  //Arredondamento de borda
-    alignItems: 'center',  //Alinhamento eixo cruzado
+    alignItems: 'center',  //centraliza o conteúdo no eixo cruzado (horizontal),
   },
   textoBotaoVoltar: {
     color: '#334155',  //Cor do texto do botão "Voltar", azul slate escuro e dessaturado
