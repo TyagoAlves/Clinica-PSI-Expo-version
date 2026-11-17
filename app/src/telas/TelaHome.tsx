@@ -9,7 +9,8 @@ export default function TelaHome({
   totalSecoes = 0,  //calculo de numeros de seções
 }) {
   return (
-    <>  {/* agrupa elementos sem criar um nó extra no DOM.*/} 
+    <>
+    {/* agrupa elementos sem criar um nó extra no DOM.*/} 
     {/*Define um ScrollView para permitir rolagem da tela, com estilo definido em styles.tela*/}
     <ScrollView contentContainerStyle={styles.tela}>
       {/*<View style={styles.container} O componente View chama o estilo .container que esta no final da pagina*/}

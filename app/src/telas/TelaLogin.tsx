@@ -6,7 +6,8 @@ export default function TelaLogin({ aoEntrar }) {
   const [senha, setSenha] = useState('');
 
   return ( //o return de um componente React só pode ter um elemento raiz
-    <> {/* agrupa elementos sem criar um nó extra no DOM.*/} 
+    <>
+    {/* agrupa elementos sem criar um nó extra no DOM.*/} 
 {/*<View style={styles.tela} O componente View chama o estilo .tela que esta no final da pagina
 */}
 <View style={styles.tela}>

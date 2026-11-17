@@ -57,7 +57,8 @@ export default function TelaAgenda({ //  - os dados são salvos e recupecuperado
             <View style={styles.cartao}>
               {/*<Text style={styles.textoVazio}>Nenhuma seção agendada.</Text> O componente Text chama o estilo .textoVazio que esta no final da pagina*/}
               <Text style={styles.textoVazio}>Nenhuma seção agendada.</Text>
-            </View>  {/*fecha o componente View do cartão*/}
+            </View>
+            {/*fecha o componente View do cartão*/}
             {/* ) : ( Se houver seções agendadas, exibe uma lista de cartões com as informações de cada seção.*/}
             </>
           ) : (

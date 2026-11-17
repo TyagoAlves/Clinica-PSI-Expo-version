@@ -19,7 +19,6 @@ export default function TelaVerSecao({ secao, aoVoltar, aoEditar }) {// Define o
         </Pressable>  
         {/*Fechamento do componente tela*/}
       </View> 
-    );   
       </>
     );
   }
