@@ -1,4 +1,4 @@
-# Clínica Psi — Prontuário psicológico (versão para apresentação)
+# Clínica Psi — Prontuário psicológico
 
 App (Expo / React Native) para psicólogos e clínicas: pacientes e agenda de sessões.
 Esta é a versão **unificada do time**: telas do Tyago, banco SQLite do Yago e ponto de entrada (`index.js` / `App.tsx`) do Kelven.
@@ -80,5 +80,4 @@ node src/banco/servidor.js --init   # só cria/verifica as tabelas e sai
 
 - [`app/DOCUMENTACAO_BANCO_SQLITE.md`](app/DOCUMENTACAO_BANCO_SQLITE.md): tabelas, rotas e como o banco funciona (Yago)
 - [`app/DOCUMENTACAO_CSS.md`](app/DOCUMENTACAO_CSS.md): estilos das telas (Tyago)
-- [`docs/01-O-PROJETO.md`](docs/01-O-PROJETO.md) a [`docs/06-CSS.md`](docs/06-CSS.md): tutoriais da versão anterior.
-  Os capítulos 04 (Supabase) e 05 (API Express) descrevem a arquitetura antiga, que foi trocada pelo SQLite do Yago.
+  API Express descrevem a arquitetura antiga, que foi trocada pelo SQLite do Yago.
