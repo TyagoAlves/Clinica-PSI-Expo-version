@@ -15,7 +15,8 @@ const crypto = require('crypto');
 require('dotenv').config({ path: path.resolve(__dirname, '../../.env') });
 
 // Importa o driver oficial e de alta performance do SQLite para Node.js
-const Database = require('better-sqlite3');
+//Node é v26, que já tem o módulo node:sqlite embutido
+const { DatabaseSync } = require('node:sqlite');   
 
 // Define endereço, porta e caminho do arquivo do banco SQLite
 // '0.0.0.0' permite conexões locais (localhost / 127.0.0.1) e de dispositivos na mesma rede (Wi-Fi)
@@ -37,10 +38,10 @@ if (!fs.existsSync(dbDir)) {
 }
 
 // Abre/Cria o arquivo local do banco SQLite (clinica.db)
-const db = new Database(path.resolve(__dirname, '../../', DB_PATH));
+const db = new DatabaseSync(path.resolve(__dirname, '../../', DB_PATH));
 
 // Ativa o modo WAL (Write-Ahead Logging) do SQLite para maior rapidez e segurança de concorrência
-db.pragma('journal_mode = WAL');
+db.exec('PRAGMA journal_mode = WAL;');
 
 // ============================================================================
 // FUNÇÃO: inicializarBanco()

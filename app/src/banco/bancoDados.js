@@ -7,11 +7,12 @@
 
 // Resolve dinamicamente a URL da API:
 // Se estiver no navegador, usa o mesmo hostname do browser (localhost ou IP da rede local)
+// No celular (React Native), usa o IP fixo da rede local
 const getApiUrl = () => {
   if (typeof window !== 'undefined' && window.location && window.location.hostname) {
     return `http://${window.location.hostname}:3333`;
   }
-  return 'http://127.0.0.1:3333';
+  return 'http://192.168.0.121:3333';
 };
 
 const API_URL = getApiUrl();
@@ -153,4 +154,4 @@ export async function apagarRegistro(tabela, id) {
 export const buscarDadosSupabase = buscarDados;
 export const criarNoSupabase = criarRegistro;
 export const atualizarNoSupabase = atualizarRegistro;
-export const apagarNoSupabase = apagarRegistro;
+export const apagarNoSupabase = apagarRegistro;   
