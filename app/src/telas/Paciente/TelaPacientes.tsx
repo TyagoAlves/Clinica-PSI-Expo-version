@@ -1,12 +1,5 @@
 import { View, Text, Pressable, StyleSheet, ScrollView } from 'react-native';
-{/*
-  aoNovo, //ao clicar no botão "Novo Paciente" troca para a telaNovoPaciente
-  aoSair,  //ao clicar no botão "Sair" troca para a telaLogin
-  aoAgenda,  //ao clicar no botão "Abrir Agenda" troca para a telaAgenda
-  verPacientes,  //ao clicar no botão "Ver Pacientes" troca para a telaPacientes
-  totalPacientes = 0,  //calculo de numeros de pacientes
-  totalSecoes = 0,  //calculo de numeros de seções
-*/}
+
 export default function TelaPacientes({
   pacientes = [], //lista de pacientes (array de objetos)
   aoNovo, //ao clicar no botão "Novo Paciente" troca para a telaNovoPaciente

@@ -1,5 +1,13 @@
-import { useState, useEffect } from 'react';
-import { StatusBar } from 'expo-status-bar';
+// ponto de partida do app, foi registrado como raiz em index.js.
+// a função desse código é decidir qual tela mostrar ao usuário,
+// e guardar na memória os dados que vêm do banco SQLite (pacientes e seções) pra entregar pras telas.
+
+// Quem faz o quê aqui dentro:
+//   telas (src/telas)            -> parte do Tyago: só mostram os dados e avisam quando o usuário clica
+//   banco (src/banco)            -> parte do Yago: bancoDados.js manda o pedido pro servidor.js, que grava no SQLite
+//   App.tsx (este arquivo)       -> liga as duas coisas: escolhe a tela e chama o banco
+import { useState, useEffect } from 'react'; // useState guarda um valor que muda a tela, useEffect roda algo quando o app abre
+import { StatusBar } from 'expo-status-bar'; // a barra de cima do celular (relógio, bateria)
 import TelaLogin from './src/telas/TelaLogin';
 import TelaHome from './src/telas/TelaHome';
 import TelaAgenda from './src/telas/Agenda/TelaAgenda';
@@ -18,6 +26,7 @@ import {
   apagarRegistro,
 } from './src/banco/bancoDados';
 
+//"export default" faz esta função ser a "principal" do arquivo, a que o "index,js" importa.
 export default function App() {
   // Estado que controla qual tela está visível no momento (começa na TelaLogin)
   const [telaAtual, setTelaAtual] = useState('TelaHome');
@@ -163,6 +172,8 @@ export default function App() {
    * Pense nele como uma cascata de perguntas: "é isso? senão, é aquilo? senão, é o resto."
    * condição ? valorSeVerdadeiro : valorSeFalso
    */
+  //cada pergunta compara o nome guardado em telaAtual e devolve a tela certa.
+  //se nenhuma condição for atendida, cai no último item e joga de volta pro painel (TelaHome), que funciona como tela padrão.
   return (
     <>
       <StatusBar style="auto" />
@@ -241,3 +252,11 @@ export default function App() {
     </>
   );
 }
+//-----------------------------------------------------------------------------------------
+// Como o código acima se comunica com o resto do projeto?
+// quando o usuario clicka em "Ver Pacientes" no painel (TelaHome), a tela chama "verPacientes",
+// que faz setTelaAtual('TelaPacientes'). o React percebe a mudança, roda o App de novo e devolve a TelaPacientes.
+// quando o usuário salva um paciente, a tela chama "aoSalvar" -> adicionarPaciente -> criarRegistro (bancoDados.js)
+// -> POST /pacientes no servidor.js -> INSERT no SQLite. o registro volta com o id e entra na lista da tela.
+//-----------------------------------------------------------------------------------------
+// dps daqui, dá uma olhada em "src/banco/bancoDados.js"

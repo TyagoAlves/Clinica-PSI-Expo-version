@@ -8,7 +8,8 @@
     "web": "expo start --web",
     "servidor": "node src/banco/servidor.js",
     "dev": "node -e \"const {spawn}=require('child_process');spawn('node',['src/banco/servidor.js'],{stdio:'inherit'});spawn('npx',['expo','start','--web'],{stdio:'inherit',shell:true});\"",
-    "gen:key": "node -e \"console.log(require('crypto').randomBytes(32).toString('base64'))\""
+    "gen:key": "node -e \"console.log(require('crypto').randomBytes(32).toString('base64'))\"",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.2",
@@ -25,5 +26,7 @@
     "@types/react": "~19.2.0",
     "typescript": "~5.9.2"
   },
-  "private": true
+  "private": true,
+  "name": "clinica-psi",
+  "version": "1.0.0"
 }
