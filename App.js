@@ -10,100 +10,152 @@ import TelaEditarPaciente from './src/telas/Paciente/TelaEditarPaciente';
 import TelaNovaSecao from './src/telas/Agenda/TelaNovaSecao';
 import TelaEditarSecao from './src/telas/Agenda/TelaEditarSecao';
 import TelaVerSecao from './src/telas/Agenda/TelaVerSecao';
+// Importa as 4 funções de comunicação HTTP (CRUD) que conversam com o servidor local SQLite
 import {
-  buscarDadosSupabase,
-  criarNoSupabase,
-  atualizarNoSupabase,
-  apagarNoSupabase,
+  buscarDados,
+  criarRegistro,
+  atualizarRegistro,
+  apagarRegistro,
 } from './src/banco/bancoDados';
 
 export default function App() {
-  const [telaAtual, setTelaAtual] = useState('TelaLogin');
+  // Estado que controla qual tela está visível no momento (começa na TelaLogin)
+  const [telaAtual, setTelaAtual] = useState('TelaHome');
 
-  // Estados alimentados exclusivamente pelo banco Supabase
-  const [pacientes, setPacientes] = useState([]);
-  const [pacienteSelecionado, setPacienteSelecionado] = useState(null);
+  // ==========================================================================
+  // ESTADOS DO BANCO DE DADOS NA MEMÓRIA DO REACT
+  // Começam vazios ([]) porque todos os dados vêm exclusivamente do SQLite!
+  // ==========================================================================
+  const [pacientes, setPacientes] = useState([]); // Lista de pacientes carregada do SQLite
+  const [pacienteSelecionado, setPacienteSelecionado] = useState(null); // Paciente clicado para ver ou editar
 
-  const [secoes, setSecoes] = useState([]);
-  const [secaoSelecionada, setSecaoSelecionada] = useState(null);
+  const [secoes, setSecoes] = useState([]); // Lista de sessões da agenda carregada do SQLite
+  const [secaoSelecionada, setSecaoSelecionada] = useState(null); // Sessão clicada para ver ou editar
 
-  // Carrega os pacientes e seções direto do Supabase ao iniciar o app
+  // ==========================================================================
+  // 1. LEITURA INICIAL (READ) - Carrega os dados do SQLite assim que o App abre
+  // O array vazio [] no final garante que o useEffect rode apenas 1 vez ao iniciar
+  // ==========================================================================
   useEffect(() => {
-    async function carregarDoSupabase() {
-      const listaPacientes = await buscarDadosSupabase('pacientes');
+    async function carregarDoBanco() {
+      // Faz GET /pacientes no servidor, aguarda (await) a lista do SQLite e salva no estado 'pacientes'
+      const listaPacientes = await buscarDados('pacientes');
       setPacientes(listaPacientes);
 
-      const listaSecoes = await buscarDadosSupabase('secoes');
+      // Faz GET /secoes no servidor, aguarda (await) a lista do SQLite e salva no estado 'secoes'
+      const listaSecoes = await buscarDados('secoes');
       setSecoes(listaSecoes);
     }
-    carregarDoSupabase();
+    carregarDoBanco();
   }, []);
 
-  // --- Funções do Banco Supabase: Pacientes (Criar, Editar, Apagar) ---
+  // ==========================================================================
+  // 2. FUNÇÕES CRUD DE PACIENTES (CRIAR, EDITAR E APAGAR NO SQLITE)
+  // ==========================================================================
+
+  // CRIAR PACIENTE (POST /pacientes)
   async function adicionarPaciente(novoPaciente) {
-    const criadoNoSupabase = await criarNoSupabase('pacientes', novoPaciente);
-    if (criadoNoSupabase) {
-      setPacientes([...pacientes, criadoNoSupabase]);
+    // Envia os dados preenchidos para o SQLite e aguarda o registro criado (já com o ID gerado pelo banco)
+    const criadoNoBanco = await criarRegistro('pacientes', novoPaciente);
+    if (criadoNoBanco) {
+      // Atualiza a lista na tela copiando os pacientes atuais (...pacientes) e adicionando o novo no final
+      setPacientes([...pacientes, criadoNoBanco]);
+      // Exibe um alerta simples confirmando o cadastro
+      alert('Paciente registrado com sucesso!');
+      // Navega automaticamente de volta para a lista de pacientes
       setTelaAtual('TelaPacientes');
+    } else {
+      alert(
+        'Aviso: Não foi possível salvar o paciente!\n\nO servidor SQLite (porta 3333) não respondeu.\nAbra um terminal e rode: npm run servidor'
+      );
     }
   }
 
+  // EDITAR PACIENTE (PUT /pacientes/:id)
   async function salvarEdicaoPaciente(pacienteEditado) {
-    const atualizadoNoSupabase = await atualizarNoSupabase(
+    // Envia o ID e os novos dados para o SQLite atualizar a linha correspondente
+    const atualizadoNoBanco = await atualizarRegistro(
       'pacientes',
       pacienteEditado.id,
       pacienteEditado
     );
-    if (atualizadoNoSupabase) {
+    if (atualizadoNoBanco) {
+      // Percorre a lista com .map(): onde o ID for igual ao editado, substitui pelo novo vindo do SQLite
       const novaLista = pacientes.map((p) =>
-        p.id === atualizadoNoSupabase.id ? atualizadoNoSupabase : p
+        p.id === atualizadoNoBanco.id ? atualizadoNoBanco : p
       );
       setPacientes(novaLista);
-      setPacienteSelecionado(atualizadoNoSupabase);
+      // Atualiza também a ficha do paciente selecionado e volta para a tela de detalhes dele
+      setPacienteSelecionado(atualizadoNoBanco);
       setTelaAtual('TelaPaciente');
+    } else {
+      alert('Aviso: Falha ao salvar alterações. O servidor SQLite (porta 3333) está desligado.');
     }
   }
 
+  // APAGAR PACIENTE (DELETE /pacientes/:id)
   async function apagarPaciente(id) {
-    const apagou = await apagarNoSupabase('pacientes', id);
+    // Pede ao servidor para executar DELETE FROM pacientes WHERE id = ? lá no SQLite
+    const apagou = await apagarRegistro('pacientes', id);
     if (apagou) {
+      // Usa .filter() para manter na tela apenas os pacientes cujo ID seja diferente (!==) do que foi apagado
       setPacientes(pacientes.filter((p) => p.id !== id));
       setPacienteSelecionado(null);
       setTelaAtual('TelaPacientes');
+    } else {
+      alert('Aviso: Falha ao apagar paciente. O servidor SQLite (porta 3333) está desligado.');
     }
   }
 
-  // --- Funções do Banco Supabase: Seções da Agenda (Criar, Editar, Apagar) ---
+  // ==========================================================================
+  // 3. FUNÇÕES CRUD DE SEÇÕES DA AGENDA (CRIAR, EDITAR E APAGAR NO SQLITE)
+  // ==========================================================================
+
+  // CRIAR SEÇÃO (POST /secoes)
   async function adicionarSecao(novaSecao) {
-    const criadaNoSupabase = await criarNoSupabase('secoes', novaSecao);
-    if (criadaNoSupabase) {
-      setSecoes([...secoes, criadaNoSupabase]);
+    // Envia a nova sessão para a tabela 'secoes' do SQLite
+    const criadaNoBanco = await criarRegistro('secoes', novaSecao);
+    if (criadaNoBanco) {
+      // Adiciona a sessão recém-criada (com seu novo ID) ao final da lista da agenda
+      setSecoes([...secoes, criadaNoBanco]);
       setTelaAtual('TelaAgenda');
+    } else {
+      alert('Aviso: Falha ao agendar seção. O servidor SQLite (porta 3333) está desligado.');
     }
   }
 
+  // EDITAR SEÇÃO (PUT /secoes/:id)
   async function salvarEdicaoSecao(secaoEditada) {
-    const atualizadaNoSupabase = await atualizarNoSupabase(
+    // Atualiza os dados da sessão no SQLite pelo ID
+    const atualizadaNoBanco = await atualizarRegistro(
       'secoes',
       secaoEditada.id,
       secaoEditada
     );
-    if (atualizadaNoSupabase) {
+    if (atualizadaNoBanco) {
+      // Substitui a sessão antiga pela versão atualizada na lista usando .map()
       const novaLista = secoes.map((s) =>
-        s.id === atualizadaNoSupabase.id ? atualizadaNoSupabase : s
+        s.id === atualizadaNoBanco.id ? atualizadaNoBanco : s
       );
       setSecoes(novaLista);
-      setSecaoSelecionada(atualizadaNoSupabase);
+      setSecaoSelecionada(atualizadaNoBanco);
       setTelaAtual('TelaAgenda');
+    } else {
+      alert('Aviso: Falha ao atualizar seção. O servidor SQLite (porta 3333) está desligado.');
     }
   }
 
+  // APAGAR SEÇÃO (DELETE /secoes/:id)
   async function apagarSecao(id) {
-    const apagou = await apagarNoSupabase('secoes', id);
+    // Remove a sessão da tabela 'secoes' no SQLite pelo ID
+    const apagou = await apagarRegistro('secoes', id);
     if (apagou) {
+      // Filtra a lista mantendo apenas as sessões que não foram apagadas
       setSecoes(secoes.filter((s) => s.id !== id));
       setSecaoSelecionada(null);
       setTelaAtual('TelaAgenda');
+    } else {
+      alert('Aviso: Falha ao apagar seção. O servidor SQLite (porta 3333) está desligado.');
     }
   }
 

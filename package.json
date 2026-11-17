@@ -6,14 +6,16 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
-    "servidor": "node src/banco/servidor.js"
+    "servidor": "node src/banco/servidor.js",
+    "dev": "node -e \"const {spawn}=require('child_process');spawn('node',['src/banco/servidor.js'],{stdio:'inherit'});spawn('npx',['expo','start','--web'],{stdio:'inherit',shell:true});\"",
+    "gen:key": "node -e \"console.log(require('crypto').randomBytes(32).toString('base64'))\""
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.2",
+    "better-sqlite3": "^13.2.0",
     "dotenv": "^16.4.7",
     "expo": "^58.0.25",
     "expo-status-bar": "~55.0.6",
-    "pg": "^8.13.3",
     "react": "19.2.0",
     "react-dom": "19.2.0",
     "react-native": "0.83.10",
