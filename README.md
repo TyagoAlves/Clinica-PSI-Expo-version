@@ -50,7 +50,11 @@ npm run servidor        # terminal 1: servidor SQLite em http://localhost:3333
 npx expo start --web    # terminal 2: app no navegador (ou --android)
 ```
 
-**Login:** `admin@clinica.com.br` / `123456` (usuário fixo, criado na primeira vez que o servidor sobe; troque em `app/.env`, veja `app/.env.example`).
+**Login:** 
+
+`admin@clinica.com.br` / `123456` 
+
+usuário fixo, criado na primeira vez que o servidor sobe; troque em `app/.env`, veja `app/.env.example`.
 Sem login, o servidor recusa os dados (`401`).
 
 Teste rápido do servidor: abra http://localhost:3333/health (pública). `/pacientes` e `/secoes` exigem login.
