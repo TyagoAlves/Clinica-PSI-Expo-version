@@ -17,21 +17,6 @@ const getApiUrl = () => {
 const API_URL = getApiUrl();
 
 // ============================================================================
-// VERIFICAÇÃO DE SAÚDE DA API (HEALTH CHECK)
-// ============================================================================
-export async function verificarServidor() {
-  try {
-    const resposta = await fetch(`${API_URL}/health`);
-    if (resposta.ok) {
-      return await resposta.json();
-    }
-  } catch {
-    return null;
-  }
-  return null;
-}
-
-// ============================================================================
 // 1. LISTAR (READ) - Busca os registros direto do SQLite via método GET
 // Parâmetro 'tabela': 'pacientes' ou 'secoes'
 // ============================================================================

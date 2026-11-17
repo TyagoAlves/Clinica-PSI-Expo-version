@@ -135,19 +135,6 @@ const servidor = http.createServer(async (req, res) => {
 
   try {
     // ========================================================================
-    // ROTA DE SAÚDE (HEALTH CHECK / QA)
-    // ========================================================================
-    if (url === '/health' && req.method === 'GET') {
-      return responderJson(res, 200, {
-        status: 'ok',
-        banco: 'sqlite',
-        arquivo: DB_PATH,
-        tabelas: ['pacientes', 'secoes'],
-        timestamp: new Date().toISOString(),
-      });
-    }
-
-    // ========================================================================
     // ROTAS: PACIENTES (CRUD EM SQLITE)
     // ========================================================================
 
